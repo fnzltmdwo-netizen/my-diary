@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+
+<html lang="ko">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>My Diary Login</title>
+
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
+
+        body {
+            margin: 0;
+
+            min-height: 100vh;
+
+            display: flex;
+
+            align-items: center;
+            justify-content: center;
+
+            padding: 24px;
+
+            background:
+                #f3eee8;
+
+            font-family:
+                "Segoe UI",
+                "Noto Sans KR",
+                sans-serif;
+
+            color:
+                #322d2c;
+        }
+
+
+        .login-card {
+            width: 100%;
+
+            max-width: 390px;
+
+            padding:
+                42px
+                34px;
+
+            background:
+                #fffdf8;
+
+            border-radius:
+                24px;
+
+            box-shadow:
+                0 18px 55px
+                rgba(
+                    79,
+                    58,
+                    50,
+                    0.14
+                );
+        }
+
+
+        .small-title {
+            margin: 0;
+
+            text-align: center;
+
+            color:
+                #a2717a;
+
+            font-size: 12px;
+
+            font-weight: 700;
+
+            letter-spacing: 5px;
+        }
+
+
+        h1 {
+            margin:
+                8px 0
+                5px;
+
+            text-align: center;
+
+            font-family:
+                Georgia,
+                serif;
+
+            font-size: 36px;
+        }
+
+
+        .subtitle {
+            margin:
+                0 0
+                34px;
+
+            text-align: center;
+
+            color:
+                #9c918c;
+
+            font-size: 13px;
+        }
+
+
+        label {
+            display: block;
+
+            margin-bottom: 7px;
+
+            color:
+                #746865;
+
+            font-size: 13px;
+
+            font-weight: 600;
+        }
+
+
+        input {
+            width: 100%;
+            height: 48px;
+
+            margin-bottom: 18px;
+
+            padding:
+                0 15px;
+
+            border:
+                1px solid
+                #dfd1cc;
+
+            border-radius:
+                13px;
+
+            outline: none;
+
+            background:
+                white;
+
+            font-size: 15px;
+        }
+
+
+        input:focus {
+            border-color:
+                #b57c86;
+        }
+
+
+        button {
+            width: 100%;
+            height: 50px;
+
+            margin-top: 5px;
+
+            border: none;
+
+            border-radius:
+                14px;
+
+            background:
+                #b57c86;
+
+            color:
+                white;
+
+            font-size: 15px;
+
+            font-weight: 700;
+
+            cursor: pointer;
+        }
+
+
+        button:disabled {
+            opacity: 0.6;
+
+            cursor: default;
+        }
+
+
+        #errorMessage {
+            min-height: 22px;
+
+            margin:
+                17px 0
+                0;
+
+            text-align: center;
+
+            color:
+                #bd5e63;
+
+            font-size: 13px;
+        }
+
+
+        .diary-line {
+            width: 50px;
+            height: 3px;
+
+            margin:
+                20px auto
+                0;
+
+            border-radius:
+                10px;
+
+            background:
+                #d7afb5;
+        }
+
+
+        @media (
+            max-width: 500px
+        ) {
+
+            body {
+                padding: 18px;
+
+                background:
+                    #fffdf8;
+            }
+
+
+            .login-card {
+                box-shadow: none;
+
+                padding:
+                    30px
+                    10px;
+            }
+
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+
+<div class="login-card">
+
+    <p class="small-title">
+        MY DIARY
+    </p>
+
+
+    <h1>
+        Welcome
+    </h1>
+
+
+    <p class="subtitle">
+        나만의 하루를 기록해보세요.
+    </p>
+
+
+    <form id="loginForm">
+
+        <label for="username">
+            아이디
+        </label>
+
+
+        <input
+            id="username"
+            type="text"
+            autocomplete="username"
+            required
+        >
+
+
+        <label for="password">
+            비밀번호
+        </label>
+
+
+        <input
+            id="password"
+            type="password"
+            autocomplete="current-password"
+            required
+        >
+
+
+        <button
+            id="loginBtn"
+            type="submit"
+        >
+            로그인
+        </button>
+
+    </form>
+
+
+    <div id="errorMessage"></div>
+
+
+    <div class="diary-line"></div>
+
+</div>
+
+
+<script>
+
+    const loginForm =
+        document.getElementById(
+            "loginForm"
+        );
+
+
+    const loginBtn =
+        document.getElementById(
+            "loginBtn"
+        );
+
+
+    const errorMessage =
+        document.getElementById(
+            "errorMessage"
+        );
+
+
+    loginForm.addEventListener(
+        "submit",
+
+        async event => {
+
+            event.preventDefault();
+
+
+            errorMessage.innerText =
+                "";
+
+
+            loginBtn.disabled =
+                true;
+
+
+            loginBtn.innerText =
+                "로그인 중...";
+
+
+            const username =
+                document
+                    .getElementById(
+                        "username"
+                    )
+                    .value
+                    .trim();
+
+
+            const password =
+                document
+                    .getElementById(
+                        "password"
+                    )
+                    .value;
+
+
+            try {
+
+                const response =
+                    await fetch(
+                        "/api/login",
+                        {
+                            method:
+                                "POST",
+
+                            headers: {
+                                "Content-Type":
+                                    "application/json"
+                            },
+
+                            body:
+                                JSON.stringify({
+                                    username:
+                                        username,
+
+                                    password:
+                                        password
+                                })
+                        }
+                    );
+
+
+                if (!response.ok) {
+
+                    const data =
+                        await response.json();
+
+
+                    throw new Error(
+                        data.detail
+                        ||
+                        "로그인 실패"
+                    );
+
+                }
+
+
+                window.location.href =
+                    "/";
+
+            }
+
+            catch (error) {
+
+                errorMessage.innerText =
+                    error.message;
+
+            }
+
+            finally {
+
+                loginBtn.disabled =
+                    false;
+
+
+                loginBtn.innerText =
+                    "로그인";
+
+            }
+
+        }
+    );
+
+</script>
+
+
+</body>
+
+</html>
