@@ -40,7 +40,10 @@ public class ChiyeonAccessibilityService extends AccessibilityService {
     private final Set<String> targets = new HashSet<>(Arrays.asList(
         "com.realbyteapps.moneymanager",
         "com.realbyteapps.moneymanagerfree",
-        "com.realbyte.money"
+        "com.realbyteapps.moneya",
+        "com.realbyte.money",
+        "com.chiyeon.moneybook",
+        "com.chiyeon.money"
     ));
 
     private final Set<String> transientPackages = new HashSet<>(Arrays.asList(
@@ -60,7 +63,7 @@ public class ChiyeonAccessibilityService extends AccessibilityService {
         super.onServiceConnected();
         wm = (WindowManager)getSystemService(WINDOW_SERVICE);
         buildOverlay();
-        saveState("서비스 연결됨 · V3", "", "", ScreenProfile.UNKNOWN, "");
+        saveState("서비스 연결됨 · V5 PACKAGE MATCHER", "", "", ScreenProfile.UNKNOWN, "");
     }
 
     private void buildOverlay(){
@@ -195,7 +198,7 @@ public class ChiyeonAccessibilityService extends AccessibilityService {
         long now = System.currentTimeMillis();
 
         AccessibilityNodeInfo moneyRoot = findMoneyManagerRoot();
-        boolean eventIsTarget = targets.contains(pkg);
+        boolean eventIsTarget = isTargetPackage(pkg);
 
         if (eventIsTarget || moneyRoot != null) {
             lastTargetSeenAt = now;
@@ -211,7 +214,7 @@ public class ChiyeonAccessibilityService extends AccessibilityService {
                 if (targetPkg.isEmpty() && eventIsTarget) targetPkg = pkg;
                 ScreenProfile profile = ScreenProfile.classify(cls, visibleText);
                 applyProfile(profile, false);
-                saveState("머니매니저 감지됨 · 고정 유지", targetPkg, cls, profile, visibleText);
+                saveState("치연 돈관리 감지됨 · 오버레이 유지", targetPkg, cls, profile, visibleText);
             }
             return;
         }
@@ -221,8 +224,16 @@ public class ChiyeonAccessibilityService extends AccessibilityService {
 
         if (event.getEventType() == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) {
             hide();
-            saveState("머니매니저 밖으로 이동", pkg, cls, ScreenProfile.UNKNOWN, "");
+            saveState("치연 돈관리 밖으로 이동", pkg, cls, ScreenProfile.UNKNOWN, "");
         }
+    }
+
+    private boolean isTargetPackage(String pkg) {
+        if (pkg == null || pkg.isEmpty()) return false;
+        if (targets.contains(pkg)) return true;
+        String p = pkg.toLowerCase();
+        return p.startsWith("com.realbyteapps.money") ||
+               p.startsWith("com.chiyeon.money");
     }
 
     private boolean isTransientPackage(String pkg) {
@@ -254,7 +265,7 @@ public class ChiyeonAccessibilityService extends AccessibilityService {
     }
 
     private boolean isTargetRoot(AccessibilityNodeInfo root) {
-        return root != null && targets.contains(packageOf(root));
+        return root != null && isTargetPackage(packageOf(root));
     }
 
     private String packageOf(AccessibilityNodeInfo root) {
