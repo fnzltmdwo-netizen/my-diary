@@ -1,0 +1,51 @@
+name: Build Chiyeon Overlay V2 Temp APK
+
+on:
+  push:
+    branches: [ chiyeon-overlay-v2-build-20260825 ]
+    paths:
+      - 'chiyeon_overlay_v2_payload.b64'
+      - '.github/workflows/chiyeon-overlay-v2-temp.yml'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Gradle 8.9
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.9'
+
+      - name: Restore Android project
+        run: |
+          base64 -d chiyeon_overlay_v2_payload.b64 | tar -xz
+          test -f chiyeon_overlay_v2/app/build.gradle
+          test -f chiyeon_overlay_v2/app/src/main/AndroidManifest.xml
+
+      - name: Build debug APK
+        working-directory: chiyeon_overlay_v2
+        run: gradle --no-daemon :app:assembleDebug
+
+      - name: Rename APK
+        run: |
+          mkdir -p release
+          cp chiyeon_overlay_v2/app/build/outputs/apk/debug/app-debug.apk release/CHIYEON_OVERLAY_V2_SCREEN_DETECT.apk
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: CHIYEON_OVERLAY_V2_SCREEN_DETECT_APK
+          path: release/CHIYEON_OVERLAY_V2_SCREEN_DETECT.apk
+          if-no-files-found: error
+          retention-days: 1
