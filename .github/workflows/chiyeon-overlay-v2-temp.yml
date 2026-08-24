@@ -1,10 +1,11 @@
-name: Build Chiyeon Overlay V2 Temp APK
+name: Build Chiyeon Overlay V3 Temp APK
 
 on:
   push:
     branches: [ chiyeon-overlay-v2-build-20260825 ]
     paths:
       - 'chiyeon_overlay_v2_payload.b64'
+      - 'chiyeon_v3_overrides/**'
       - '.github/workflows/chiyeon-overlay-v2-temp.yml'
 
 jobs:
@@ -27,11 +28,15 @@ jobs:
         with:
           gradle-version: '8.9'
 
-      - name: Restore Android project
+      - name: Restore V2 base and apply V3 fixes
         run: |
           base64 -d chiyeon_overlay_v2_payload.b64 | tar -xz
           test -f chiyeon_overlay_v2/app/build.gradle
-          test -f chiyeon_overlay_v2/app/src/main/AndroidManifest.xml
+          cp chiyeon_v3_overrides/ChiyeonAccessibilityService.java chiyeon_overlay_v2/app/src/main/java/com/chiyeon/overlay/ChiyeonAccessibilityService.java
+          cp chiyeon_v3_overrides/ScreenProfile.java chiyeon_overlay_v2/app/src/main/java/com/chiyeon/overlay/ScreenProfile.java
+          sed -i 's/versionCode 2/versionCode 3/' chiyeon_overlay_v2/app/build.gradle
+          sed -i 's/versionName "2.0"/versionName "3.0"/' chiyeon_overlay_v2/app/build.gradle
+          sed -i 's/치연 오버레이 V2/치연 오버레이 V3/' chiyeon_overlay_v2/app/src/main/java/com/chiyeon/overlay/MainActivity.java
 
       - name: Build debug APK
         working-directory: chiyeon_overlay_v2
@@ -40,12 +45,12 @@ jobs:
       - name: Rename APK
         run: |
           mkdir -p release
-          cp chiyeon_overlay_v2/app/build/outputs/apk/debug/app-debug.apk release/CHIYEON_OVERLAY_V2_SCREEN_DETECT.apk
+          cp chiyeon_overlay_v2/app/build/outputs/apk/debug/app-debug.apk release/CHIYEON_OVERLAY_V3_SAMSUNG_GESTURE_FIX.apk
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: CHIYEON_OVERLAY_V2_SCREEN_DETECT_APK
-          path: release/CHIYEON_OVERLAY_V2_SCREEN_DETECT.apk
+          name: CHIYEON_OVERLAY_V3_SAMSUNG_GESTURE_FIX_APK
+          path: release/CHIYEON_OVERLAY_V3_SAMSUNG_GESTURE_FIX.apk
           if-no-files-found: error
           retention-days: 1
