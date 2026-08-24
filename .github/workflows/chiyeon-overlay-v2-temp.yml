@@ -1,4 +1,4 @@
-name: Build Chiyeon Overlay V5 Package Fix APK
+name: Build Chiyeon Overlay V6 Polished APK
 
 on:
   push:
@@ -28,24 +28,23 @@ jobs:
         with:
           gradle-version: '8.9'
 
-      - name: Restore base and apply V5 package matcher
+      - name: Restore base and apply V6 polished overlay
         run: |
           base64 -d chiyeon_overlay_v2_payload.b64 | tar -xz
           test -f chiyeon_overlay_v2/app/build.gradle
+
           cp chiyeon_v3_overrides/ChiyeonAccessibilityService.java chiyeon_overlay_v2/app/src/main/java/com/chiyeon/overlay/ChiyeonAccessibilityService.java
           cp chiyeon_v3_overrides/ScreenProfile.java chiyeon_overlay_v2/app/src/main/java/com/chiyeon/overlay/ScreenProfile.java
 
-          # 접근성 서비스 전용 오버레이를 사용해 SYSTEM_ALERT_WINDOW 상태와 분리.
-          sed -i 's/WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY/WindowManager.LayoutParams.TYPE_ACCESSIBILITY_OVERLAY/g' chiyeon_overlay_v2/app/src/main/java/com/chiyeon/overlay/ChiyeonAccessibilityService.java
-          sed -i 's/ || !Settings.canDrawOverlays(this)//' chiyeon_overlay_v2/app/src/main/java/com/chiyeon/overlay/ChiyeonAccessibilityService.java
+          sed -i 's/versionCode 2/versionCode 6/' chiyeon_overlay_v2/app/build.gradle
+          sed -i 's/versionName "2.0"/versionName "6.0"/' chiyeon_overlay_v2/app/build.gradle
+          sed -i 's/치연 오버레이 V2/치연 오버레이 V6/' chiyeon_overlay_v2/app/src/main/java/com/chiyeon/overlay/MainActivity.java
 
-          sed -i 's/versionCode 2/versionCode 5/' chiyeon_overlay_v2/app/build.gradle
-          sed -i 's/versionName "2.0"/versionName "5.0"/' chiyeon_overlay_v2/app/build.gradle
-          sed -i 's/치연 오버레이 V2/치연 오버레이 V5/' chiyeon_overlay_v2/app/src/main/java/com/chiyeon/overlay/MainActivity.java
-
-          grep -n 'com.realbyteapps.moneya' chiyeon_overlay_v2/app/src/main/java/com/chiyeon/overlay/ChiyeonAccessibilityService.java
-          grep -n 'startsWith("com.realbyteapps.money")' chiyeon_overlay_v2/app/src/main/java/com/chiyeon/overlay/ChiyeonAccessibilityService.java
+          grep -n 'PROFILE_STABLE_MS = 650' chiyeon_overlay_v2/app/src/main/java/com/chiyeon/overlay/ChiyeonAccessibilityService.java
+          grep -n 'MIN_PROFILE_HOLD_MS = 2200' chiyeon_overlay_v2/app/src/main/java/com/chiyeon/overlay/ChiyeonAccessibilityService.java
           grep -n 'TYPE_ACCESSIBILITY_OVERLAY' chiyeon_overlay_v2/app/src/main/java/com/chiyeon/overlay/ChiyeonAccessibilityService.java
+          grep -n 'com.realbyteapps.moneya' chiyeon_overlay_v2/app/src/main/java/com/chiyeon/overlay/ChiyeonAccessibilityService.java
+          grep -n '그래프는 안 거짓말해' chiyeon_overlay_v2/app/src/main/java/com/chiyeon/overlay/ScreenProfile.java
 
       - name: Build debug APK
         working-directory: chiyeon_overlay_v2
@@ -54,12 +53,12 @@ jobs:
       - name: Rename APK
         run: |
           mkdir -p release
-          cp chiyeon_overlay_v2/app/build/outputs/apk/debug/app-debug.apk release/CHIYEON_OVERLAY_V5_CHIYEON_MONEY_PACKAGE_FIX.apk
+          cp chiyeon_overlay_v2/app/build/outputs/apk/debug/app-debug.apk release/CHIYEON_OVERLAY_V6_POLISHED_STABLE.apk
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: CHIYEON_OVERLAY_V5_CHIYEON_MONEY_PACKAGE_FIX_APK
-          path: release/CHIYEON_OVERLAY_V5_CHIYEON_MONEY_PACKAGE_FIX.apk
+          name: CHIYEON_OVERLAY_V6_POLISHED_STABLE_APK
+          path: release/CHIYEON_OVERLAY_V6_POLISHED_STABLE.apk
           if-no-files-found: error
           retention-days: 1
