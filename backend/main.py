@@ -6,7 +6,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from fastapi import Depends, FastAPI, Header, HTTPException
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, HTMLResponse
 from pydantic import BaseModel
 from sqlalchemy import Column, DateTime, Integer, Text
 from sqlalchemy.orm import Session
@@ -17,7 +17,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 FRONTEND_DIR = BASE_DIR / "frontend"
 APP_PASSWORD = os.getenv("APP_PASSWORD", "").strip()
 
-app = FastAPI(title="나의 바다", version="3.4-server")
+app = FastAPI(title="나의 바다", version="3.5-server")
 
 class AppState(Base):
     __tablename__ = "app_state"
@@ -45,7 +45,7 @@ def verify_password(x_app_password: str | None = Header(default=None)):
 
 @app.get("/health")
 def health():
-    return {"ok": True, "service": "my-sea", "version": "3.4-server"}
+    return {"ok": True, "service": "my-sea", "version": "3.5-server"}
 
 @app.get("/api/state", dependencies=[Depends(verify_password)])
 def get_state(db: Session = Depends(get_db)):
@@ -90,7 +90,7 @@ IU_SYSTEM = """너는 '아이유의 공개 인터뷰에서 드러난 사고원�
 11) 사람 일은 모른다. 관계의 미래 가능성은 열어두되 접근권과 신뢰는 행동에 맞춰 조절한다.
 12) 흔들리지 않는 사람이 되는 것보다 흔들릴 때 나에게 돌아오는 복귀 경로를 만드는 것을 중요하게 본다.
 
-말투: 차분하고 다정하지만 과장되거나 신비화하지 않는다. 사용자의 감정을 먼저 정확히 짚고, 필요하면 2~4개의 짧은 관점이나 질문을 제시한다. '아이유라면 분명 이렇게 했을 것'처럼 단정하지 말고 '이 사고모델로 보면' 또는 자연스럽게 원칙을 적용한다. 사용자가 위험하거나 전문적 도움이 필요한 상황이면 연예인 관점보다 안전과 현실적인 도움을 우선한다."""
+말투: 차분하고 다정하지만 과장되거나 신비화하지 않는다. 사용자의 감정을 먼저 정확히 짚고, 필요하면 2~4개의 짧은 관점이나 질문을 제시한다. '아이유라면 분명 이렇게 했을 것'처럼 단정하지 말고 공개 발언 기반 사고원칙을 자연스럽게 적용한다. 사용자가 위험하거나 전문적 도움이 필요한 상황이면 연예인 관점보다 안전과 현실적인 도움을 우선한다."""
 
 @app.post("/api/iu-advice", dependencies=[Depends(verify_password)])
 def iu_advice(body: IUAdviceBody, x_ai_key: str | None = Header(default=None)):
@@ -141,7 +141,11 @@ def iu_advice(body: IUAdviceBody, x_ai_key: str | None = Header(default=None)):
     return {"text": text, "model": body.model}
 
 def index_file():
-    return FileResponse(FRONTEND_DIR / "index.html", headers={"Cache-Control": "no-store, max-age=0"})
+    html = (FRONTEND_DIR / "index.html").read_text(encoding="utf-8")
+    addon = '<script src="/ai-addon.js?v=35"></script>'
+    if addon not in html:
+        html = html.replace("</body>", addon + "</body>")
+    return HTMLResponse(html, headers={"Cache-Control": "no-store, max-age=0"})
 
 @app.get("/")
 def index():
