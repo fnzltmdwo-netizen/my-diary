@@ -21,7 +21,7 @@ IU_BRAIN_DIR = BASE_DIR / "iu_brain"
 APP_PASSWORD = os.getenv("APP_PASSWORD", "").strip()
 SERVER_OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "").strip()
 
-app = FastAPI(title="나의 바다", version="3.9-iu-brain-evaluation")
+app = FastAPI(title="나의 바다", version="4.0-iu-brain-emotion")
 
 
 class AppState(Base):
@@ -105,7 +105,7 @@ TOPIC_ALIASES = {
     "부족": ["imperfection", "self-acceptance", "self-evaluation", "growth"],
     "엄격": ["self-standard", "self-compassion", "perfection", "standards"],
     "게으": ["self-criticism", "self-evaluation", "work", "activation"],
-    "무기력": ["lethargy", "self-observation", "activation", "acceptance"],
+    "무기력": ["lethargy", "self-observation", "activation", "acceptance", "recovery"],
     "자격": ["self-worth", "receiving-love", "approval", "responsibility"],
     "완벽": ["perfection", "perfectionism", "perspective", "flexibility", "self-standard", "completion"],
 
@@ -132,26 +132,57 @@ TOPIC_ALIASES = {
     "실망": ["feedback", "evaluation", "relationships", "expectations"],
     "인기": ["fame", "popularity", "success", "fear", "self-protection", "evaluation"],
 
-    # 감정 · 일 · 회복
+    # 감정 · 불안 · 공허 · 반추 · 회복
     "사랑": ["love", "receiving", "reciprocity", "relationships", "confidence", "fear", "care"],
     "일": ["work", "motivation", "success", "effort", "regulation", "activation"],
     "휴식": ["rest", "self-care", "limits", "sustainability", "recovery"],
     "쉬": ["rest", "self-care", "limits", "recovery"],
     "책임": ["responsibility", "accountability", "fans", "work"],
     "부담": ["burden", "responsibility", "fear", "expectations"],
-    "불안": ["fear", "uncertainty", "self-protection", "emotion", "anxiety"],
-    "두려": ["fear", "uncertainty", "self-protection", "confidence"],
-    "외로": ["loneliness", "emotion", "relationships", "success"],
-    "공허": ["emotion", "avoidance", "recovery", "work", "emptiness"],
+    "불안": ["fear", "uncertainty", "self-protection", "emotion", "anxiety", "recovery"],
+    "걱정": ["worry", "anxiety", "reflection", "emotion", "rumination"],
+    "두려": ["fear", "uncertainty", "self-protection", "confidence", "emotion"],
+    "외로": ["loneliness", "emotion", "relationships", "success", "recovery"],
+    "공허": ["emotion", "avoidance", "recovery", "work", "emptiness", "cycles"],
+    "허무": ["emptiness", "emotion", "avoidance", "recovery", "cycles"],
+    "허전": ["emptiness", "emotion", "recovery", "cycles"],
     "감정": ["emotion", "acceptance", "rumination", "recovery"],
+    "반추": ["rumination", "emotion", "recovery", "feedback", "letting-go"],
+    "계속 생각": ["rumination", "worry", "emotion", "recovery"],
+    "생각이 멈": ["rumination", "worry", "emotion", "recovery"],
+    "매몰": ["rumination", "emotion", "problem-solving", "recovery"],
+    "번아웃": ["burnout", "depletion", "rest", "recovery", "limits", "creativity"],
+    "소진": ["burnout", "depletion", "rest", "recovery", "limits"],
+    "권태": ["malaise", "lethargy", "emotion", "change", "recovery"],
+    "지쳤": ["depletion", "rest", "recovery", "self-care", "limits"],
+    "지쳐": ["depletion", "rest", "recovery", "self-care", "limits"],
+    "아무것도 하기 싫": ["lethargy", "emotion", "activation", "acceptance", "recovery"],
+    "포기하고 싶": ["persistence", "limits", "self-compassion", "progress", "recovery"],
+    "억누": ["emotion", "avoidance", "acceptance", "recovery"],
+    "참고 있": ["emotion", "avoidance", "acceptance", "limits"],
+    "회복": ["recovery", "emotion", "acceptance", "cycles", "self-care"],
+    "다시 돌아": ["recovery", "return", "emotion", "cycles", "self-compassion"],
     "위로": ["care", "companionship", "emotion", "relationships", "reciprocity"],
-    "상실": ["loss", "grief", "continuity", "care", "emotion"],
+    "상실": ["loss", "grief", "continuity", "care", "emotion", "recovery"],
+    "슬프": ["grief", "emotion", "acceptance", "time", "recovery"],
+    "울고": ["emotion", "acceptance", "grief", "recovery"],
     "일기": ["journaling", "memory", "emotion", "time", "self-observation"],
     "기록": ["journaling", "memory", "records", "time", "self-observation"],
     "과거": ["past", "letting-go", "growth", "closure", "hindsight"],
     "후회": ["past", "decision", "effort", "closure", "regret"],
     "행복": ["happiness", "contentment", "meaning", "self-acceptance", "wellbeing"],
     "꿈": ["dreams", "future", "coping", "identity"],
+}
+
+
+EMOTION_QUERY_TRIGGERS = (
+    "불안", "걱정", "두려", "외로", "공허", "허무", "허전", "감정", "반추",
+    "계속 생각", "생각이 멈", "매몰", "번아웃", "소진", "권태", "지쳤", "지쳐",
+    "무기력", "아무것도 하기 싫", "포기하고 싶", "억누", "참고 있", "회복", "슬프", "울고",
+)
+EMOTION_PRIORITY_TOPICS = {
+    "emotion", "acceptance", "recovery", "rumination", "emptiness", "anxiety", "worry",
+    "cycles", "self-care", "limits", "grief", "lethargy", "malaise", "persistence",
 }
 
 
@@ -168,6 +199,8 @@ def retrieve_iu_evidence(message: str, context: dict | None, limit: int = 14) ->
     for trigger, topics in TOPIC_ALIASES.items():
         if trigger in query:
             wanted_topics.update(topics)
+
+    emotion_query = any(trigger in query for trigger in EMOTION_QUERY_TRIGGERS)
 
     scored: list[tuple[float, dict]] = []
     for row in IU_BRAIN:
@@ -195,6 +228,9 @@ def retrieve_iu_evidence(message: str, context: dict | None, limit: int = 14) ->
         for topic in wanted_topics:
             if topic in hay:
                 score += 1.5
+
+        if emotion_query:
+            score += len(EMOTION_PRIORITY_TOPICS & topics) * 1.1
 
         scored.append((score, row))
 
@@ -252,6 +288,12 @@ IU_SYSTEM = """너는 'IU Brain'이라는 연구 기반 조언 엔진이다.
 - 이해와 허용, 용서와 신뢰 회복, 감정과 행동을 서로 구분한다.
 - 성공·실패·평가를 다룰 때 외부 결과와 자기 가치, 주관적 안녕을 자동으로 같은 축으로 취급하지 않는다.
 - 비교를 다룰 때 타인의 강점을 인정하는 것과 자신을 열등하다고 판결하는 것을 구분한다.
+- 감정은 실제 경험이지만 미래의 예언이나 자기 존재에 대한 판결로 자동 변환하지 않는다.
+- 불안·슬픔·공허를 빨리 제거하는 것만 회복으로 취급하지 않는다. 필요하면 감정을 알아차리고 충분히 느끼는 시간과 다음 행동으로 복귀하는 과정을 함께 본다.
+- 감정을 느끼는 것과 같은 장면·반응을 반복 확인하는 반추를 구분한다. 반추가 커진 상황에서는 더 많은 해석보다 현재로 돌아오는 작은 행동을 우선할 수 있다.
+- 회복을 '완전히 괜찮아짐'으로만 정의하지 않는다. 오늘 자기 자신을 버리지 않고 가능한 다음 행동을 하는 것도 회복의 일부다.
+- 일이나 일정으로 감정을 덮는 전략을 무조건 권하지 않는다. 공개 자료에서도 그 방식의 단기 효과와 한계가 함께 드러난다.
+- 불면·신체 증상에 관한 아이유의 공개 경험을 사용자의 의료 상태에 적용하거나 진단 근거로 사용하지 않는다.
 - 사용자의 최근 기록이 제공되면 현재 상황의 맥락으로만 사용한다.
 - 짧은 원문 문구는 필요할 때만 1개 정도 사용하고 대부분은 요약한다.
 
@@ -269,7 +311,7 @@ def health():
     return {
         "ok": True,
         "service": "my-sea",
-        "version": "3.9-iu-brain-evaluation",
+        "version": "4.0-iu-brain-emotion",
         "iu_brain_observations": len(IU_BRAIN),
     }
 
@@ -425,7 +467,7 @@ def iu_advice(body: IUAdviceBody, x_ai_key: str | None = Header(default=None)):
 
 def index_file():
     html = (FRONTEND_DIR / "index.html").read_text(encoding="utf-8")
-    addon = '<script src="/ai-addon.js?v=39"></script>'
+    addon = '<script src="/ai-addon.js?v=40"></script>'
     if addon not in html:
         html = html.replace("</body>", addon + "</body>")
     return HTMLResponse(html, headers={"Cache-Control": "no-store, max-age=0"})
