@@ -22,10 +22,14 @@ services:
     plan: free
     region: singapore
     rootDir: mental-journal-v4
+    buildFilter:
+      paths:
+        - mental-journal-v4/**
+      ignoredPaths: []
     buildCommand: pip install -r requirements.txt
     startCommand: uvicorn bootstrap:app --host 0.0.0.0 --port $PORT
     healthCheckPath: /health
-    autoDeployTrigger: commit
+    autoDeployTrigger: checksPass
     envVars:
       - key: OPENAI_API_KEY
         sync: false
