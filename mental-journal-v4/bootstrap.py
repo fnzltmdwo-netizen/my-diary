@@ -20,9 +20,7 @@ def assemble(glob_pattern: str, output_name: str, expected_sha256: str | None = 
     (BASE / output_name).write_bytes(data)
 
 
-# HTML chunks were uploaded from the verified v4 source and keep a strict hash check.
 assemble("index.html.*.b64", "index.html", "e27b5e207c2c721cfeb32148c9669243f9d9417bd9bc6bfe13374e8adaed2cd6")
-# CSS is reconstructed at boot. The browser itself is the final rendering check.
 assemble("style_current.*.b64", "styles.css")
 
 from server import app  # noqa: E402,F401
