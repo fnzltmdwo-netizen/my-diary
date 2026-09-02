@@ -1,0 +1,52 @@
+name: Assemble Maeumgyeol v4 frontend
+
+on:
+  push:
+    branches: [deploy-maeumgyeol-v4]
+    paths:
+      - 'mental-journal-v4/_upload_parts/READY'
+
+permissions:
+  contents: write
+
+jobs:
+  assemble:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: deploy-maeumgyeol-v4
+          fetch-depth: 0
+      - name: Rebuild exact frontend files
+        shell: python
+        run: |
+          import base64, hashlib
+          from pathlib import Path
+
+          root = Path('mental-journal-v4')
+          parts = root / '_upload_parts'
+          expected = {
+              'index.html': 'e27b5e207c2c721cfeb32148c9669243f9d9417bd9bc6bfe13374e8adaed2cd6',
+              'styles.css': '869649395fb4b08839c066ac2a3d1cfecd3cf8058cd02a16ac7f5e7dd26e5bb6',
+              'app.js': 'bb8d837f93403b3f7f3e163c10b4d6d9e43bb8ac6bb1095a42b190e5f90c24ce',
+          }
+          for name, want in expected.items():
+              files = sorted(parts.glob(f'{name}.*.b64'))
+              if not files:
+                  raise SystemExit(f'Missing chunks for {name}')
+              data = b''.join(base64.b64decode(p.read_text().strip()) for p in files)
+              got = hashlib.sha256(data).hexdigest()
+              if got != want:
+                  raise SystemExit(f'Hash mismatch for {name}: {got}')
+              (root / name).write_bytes(data)
+              print(name, len(data), got)
+      - name: Commit clean source files
+        run: |
+          rm -rf mental-journal-v4/_upload_parts
+          rm -f .github/workflows/maeumgyeol-v4-assemble.yml
+          git config user.name "Maeumgyeol Deploy Bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add -A
+          git commit -m "Assemble Maeumgyeol v4 frontend"
+          git push origin HEAD:deploy-maeumgyeol-v4
