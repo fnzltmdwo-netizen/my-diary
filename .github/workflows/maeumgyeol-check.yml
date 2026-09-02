@@ -1,0 +1,39 @@
+name: Check Maeumgyeol v4
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/maeumgyeol-check.yml'
+      - 'mental-journal-v4/**'
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Check JavaScript syntax
+        run: node --check mental-journal-v4/app.js
+      - name: Install backend dependencies
+        run: pip install -r mental-journal-v4/requirements.txt
+      - name: Import bootstrap app
+        working-directory: mental-journal-v4
+        run: python -c "import bootstrap; print('BOOTSTRAP_OK', bootstrap.app.title)"
+      - name: Smoke test HTTP
+        working-directory: mental-journal-v4
+        run: |
+          uvicorn bootstrap:app --host 127.0.0.1 --port 8765 > /tmp/maeum.log 2>&1 &
+          PID=$!
+          sleep 3
+          curl -f http://127.0.0.1:8765/health
+          curl -f http://127.0.0.1:8765/app.js -o /tmp/app.js
+          node --check /tmp/app.js
+          curl -f http://127.0.0.1:8765/ -o /tmp/index.html
+          grep -q 'data-view="calendar"' /tmp/index.html
+          kill $PID
