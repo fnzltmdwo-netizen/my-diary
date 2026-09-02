@@ -1,0 +1,53 @@
+name: Build IU Brain Corpus
+
+on:
+  workflow_dispatch:
+    inputs:
+      max_videos:
+        description: "새로 처리할 최대 영상 수"
+        required: false
+        default: "250"
+      max_ai_calls:
+        description: "최대 AI 추출 호출 수"
+        required: false
+        default: "400"
+      search_per_query:
+        description: "검색어당 발견 후보 수"
+        required: false
+        default: "40"
+
+permissions:
+  contents: write
+
+jobs:
+  collect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install collector dependencies
+        run: pip install -r iu_corpus/requirements.txt
+      - name: Collect sources and extract IU observations
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          OPENAI_MODEL: gpt-5.6-sol
+          MAX_VIDEOS: ${{ inputs.max_videos }}
+          MAX_AI_CALLS: ${{ inputs.max_ai_calls }}
+          SEARCH_PER_QUERY: ${{ inputs.search_per_query }}
+        run: python iu_corpus/collector.py
+      - name: Commit corpus growth
+        run: |
+          git config user.name "IU Corpus Bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add iu_corpus/source_registry.jsonl iu_corpus/observations.jsonl iu_corpus/errors.jsonl 2>/dev/null || true
+          if git diff --cached --quiet; then
+            echo "No corpus changes"
+          else
+            git commit -m "Grow IU Brain Corpus"
+            git push
+          fi
