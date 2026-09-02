@@ -1,0 +1,24 @@
+{
+  "channels": [
+    {"url":"https://www.youtube.com/@dlwlrma/videos","tier":"A++","label":"이지금 IU Official 전체 영상"}
+  ],
+  "seed_videos": [
+    "https://www.youtube.com/watch?v=jxscsgTyGB4",
+    "https://www.youtube.com/watch?v=nhr05HrrJQM",
+    "https://www.youtube.com/watch?v=2LnCaecCDd0",
+    "https://www.youtube.com/watch?v=Y-4m_bwhdVA",
+    "https://www.youtube.com/watch?v=nvuJXEuYNr8",
+    "https://www.youtube.com/watch?v=DkO0z4-FHJ0",
+    "https://www.youtube.com/watch?v=4vDh05pwc7U",
+    "https://www.youtube.com/watch?v=pf7QYivvs4c",
+    "https://www.youtube.com/watch?v=eFBgN6aZ-iM",
+    "https://www.youtube.com/watch?v=Fo5ZHORQUVw",
+    "https://www.youtube.com/watch?v=zCkL9jfe1Hk"
+  ],
+  "youtube_search_queries": [
+    "아이유 인터뷰", "아이유 장문 인터뷰", "아이유 자기 자신 인터뷰", "아이유 멘탈", "아이유 마음", "아이유 사람 관계", "아이유 인간관계", "아이유 친구", "아이유 사랑", "아이유 사랑받는 법", "아이유 경계", "아이유 악플", "아이유 비판", "아이유 성공 실패", "아이유 슬럼프", "아이유 공허함", "아이유 우울 공허", "아이유 자기혐오", "아이유 자기애", "아이유 자존감", "아이유 일기", "아이유 경쟁 승부욕", "아이유 야망", "아이유 완벽주의", "아이유 불안", "아이유 두려움", "아이유 휴식", "아이유 일", "아이유 창작", "아이유 작사", "아이유 인생관", "아이유 사람 일은 모른다", "아이유 사랑이 이긴다", "아이유 나이듦 30대", "아이유 20대 인터뷰", "아이유 10대 인터뷰", "아이유 수상소감", "아이유 골든디스크 수상소감", "아이유 멜론뮤직어워드 수상소감", "아이유 MAMA 수상소감", "아이유 백상 수상소감", "아이유 콘서트 멘트", "아이유 팬들에게 한 말", "아이유 팬미팅 멘트", "아이유 뉴스룸", "아이유 유퀴즈", "아이유 살롱드립", "아이유 핑계고", "아이유 방송 인터뷰", "아이유 라디오 인터뷰", "아이유 기자간담회", "아이유 영화 인터뷰", "아이유 드라마 인터뷰", "아이유 나의 아저씨 인터뷰", "아이유 호텔 델루나 인터뷰", "아이유 폭싹 속았수다 인터뷰", "아이유 브로커 인터뷰", "아이유 드림 인터뷰", "IU interview self love", "IU interview mental health", "IU interview relationships", "IU interview people", "IU interview love", "IU interview success failure", "IU interview anxiety", "IU interview fame criticism", "IU acceptance interview", "IU Billboard interview", "IU Vogue interview", "IU ELLE interview", "IU GQ interview", "IU Harper's Bazaar interview", "IU Marie Claire interview", "IU concert speech", "IU award speech", "IU fan message", "IU documentary interview", "IU behind interview", "IU Palette interview", "IU TV interview", "IU Homebody Signal"
+  ],
+  "preferred_channels": [
+    "이지금 [IU Official]", "1theK", "tvN", "tvN D ENT", "JTBC News", "JTBC Entertainment", "KBS Kpop", "KBS Entertain", "SBS Entertainment", "SBS NOW", "MBCentertainment", "MBCkpop", "Mnet K-POP", "Billboard", "GQ KOREA", "W Korea", "VOGUE KOREA", "ELLE KOREA", "Harper's BAZAAR Korea", "Marie Claire Korea", "Netflix Korea", "TEO 테오", "백상예술대상"
+  ]
+}
