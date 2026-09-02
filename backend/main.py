@@ -16,11 +16,11 @@ from backend.database import Base, engine, get_db
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 FRONTEND_DIR = BASE_DIR / "frontend"
-IU_BRAIN_PATH = BASE_DIR / "iu_brain" / "verified_observations.jsonl"
+IU_BRAIN_DIR = BASE_DIR / "iu_brain"
 APP_PASSWORD = os.getenv("APP_PASSWORD", "").strip()
 SERVER_OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "").strip()
 
-app = FastAPI(title="나의 바다", version="3.6-iu-brain")
+app = FastAPI(title="나의 바다", version="3.7-iu-brain-batches")
 
 
 class AppState(Base):
@@ -53,19 +53,26 @@ def verify_password(x_app_password: str | None = Header(default=None)):
 
 
 def load_iu_brain() -> list[dict]:
-    rows: list[dict] = []
-    if not IU_BRAIN_PATH.exists():
-        return rows
-    for line in IU_BRAIN_PATH.read_text(encoding="utf-8").splitlines():
-        if not line.strip():
-            continue
+    by_id: dict[str, dict] = {}
+    if not IU_BRAIN_DIR.exists():
+        return []
+    files = sorted(IU_BRAIN_DIR.glob("verified_observations*.jsonl"))
+    for path in files:
         try:
-            row = json.loads(line)
-            if row.get("id") and row.get("observation"):
-                rows.append(row)
+            lines = path.read_text(encoding="utf-8").splitlines()
         except Exception:
             continue
-    return rows
+        for line in lines:
+            if not line.strip():
+                continue
+            try:
+                row = json.loads(line)
+                if row.get("id") and row.get("observation"):
+                    row.setdefault("brain_file", path.name)
+                    by_id[str(row["id"])] = row
+            except Exception:
+                continue
+    return list(by_id.values())
 
 
 IU_BRAIN = load_iu_brain()
@@ -124,9 +131,13 @@ def retrieve_iu_evidence(message: str, context: dict | None, limit: int = 14) ->
         overlap = len(q_terms & h_terms)
         topic_overlap = len(wanted_topics & topics)
         score = overlap * 1.0 + topic_overlap * 5.0
-        if row.get("tier") == "A++":
+        tier = row.get("tier")
+        if tier == "A++":
             score += 0.4
-        # Related but not literal Korean phrasing should still have a chance.
+        elif tier == "A+":
+            score += 0.3
+        elif tier in {"A", "B+"}:
+            score += 0.1
         for t in wanted_topics:
             if t in hay:
                 score += 1.5
@@ -136,7 +147,6 @@ def retrieve_iu_evidence(message: str, context: dict | None, limit: int = 14) ->
     chosen: list[dict] = []
     seen_ids: set[str] = set()
 
-    # First: strongest direct matches.
     for score, row in scored:
         if score <= 0 or row["id"] in seen_ids:
             continue
@@ -145,10 +155,9 @@ def retrieve_iu_evidence(message: str, context: dict | None, limit: int = 14) ->
         if len(chosen) >= limit:
             break
 
-    # Second: if the query was broad, fill with high-value observations across time.
     if len(chosen) < min(8, limit):
         anchors = sorted(IU_BRAIN, key=lambda r: (r.get("year", 0), r.get("id", "")))
-        target_years = [2010, 2011, 2015, 2020, 2021, 2022, 2024, 2025, 2026]
+        target_years = [2010, 2011, 2012, 2013, 2014, 2015, 2020, 2021, 2022, 2024, 2025, 2026]
         for year in target_years:
             candidates = [r for r in anchors if r.get("year") == year and r.get("id") not in seen_ids]
             if candidates:
@@ -186,13 +195,14 @@ IU_SYSTEM = """너는 'IU Brain'이라는 연구 기반 조언 엔진이다.
 
 @app.get("/health")
 def health():
-    return {"ok": True, "service": "my-sea", "version": "3.6-iu-brain", "iu_brain_observations": len(IU_BRAIN)}
+    return {"ok": True, "service": "my-sea", "version": "3.7-iu-brain-batches", "iu_brain_observations": len(IU_BRAIN)}
 
 
 @app.get("/api/iu-brain/status", dependencies=[Depends(verify_password)])
 def iu_brain_status():
     years = sorted({x.get("year") for x in IU_BRAIN if x.get("year")})
-    return {"observations": len(IU_BRAIN), "years": years, "server_key_configured": bool(SERVER_OPENAI_API_KEY)}
+    files = sorted({x.get("brain_file") for x in IU_BRAIN if x.get("brain_file")})
+    return {"observations": len(IU_BRAIN), "years": years, "brain_files": files, "server_key_configured": bool(SERVER_OPENAI_API_KEY)}
 
 
 @app.get("/api/state", dependencies=[Depends(verify_password)])
@@ -315,7 +325,7 @@ def iu_advice(body: IUAdviceBody, x_ai_key: str | None = Header(default=None)):
 
 def index_file():
     html = (FRONTEND_DIR / "index.html").read_text(encoding="utf-8")
-    addon = '<script src="/ai-addon.js?v=36"></script>'
+    addon = '<script src="/ai-addon.js?v=37"></script>'
     if addon not in html:
         html = html.replace("</body>", addon + "</body>")
     return HTMLResponse(html, headers={"Cache-Control": "no-store, max-age=0"})
