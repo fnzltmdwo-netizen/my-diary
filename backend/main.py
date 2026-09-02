@@ -20,7 +20,7 @@ IU_BRAIN_DIR = BASE_DIR / "iu_brain"
 APP_PASSWORD = os.getenv("APP_PASSWORD", "").strip()
 SERVER_OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "").strip()
 
-app = FastAPI(title="나의 바다", version="3.7-iu-brain-batches")
+app = FastAPI(title="나의 바다", version="3.8-iu-brain-retrieval")
 
 
 class AppState(Base):
@@ -78,30 +78,48 @@ def load_iu_brain() -> list[dict]:
 IU_BRAIN = load_iu_brain()
 
 TOPIC_ALIASES = {
-    "경계": ["relationships", "closure", "self-protection", "interpretation", "future"],
-    "거리": ["relationships", "closure", "self-protection"],
-    "신뢰": ["relationships", "feedback", "future"],
+    "경계": ["relationships", "closure", "self-protection", "interpretation", "future", "boundaries", "respect"],
+    "거리": ["relationships", "closure", "self-protection", "boundaries"],
+    "선": ["boundaries", "relationships", "respect", "closeness"],
+    "신뢰": ["relationships", "feedback", "future", "trust"],
     "떠났": ["relationships", "loss", "closure", "future"],
     "버림": ["relationships", "loss", "self-protection", "future"],
     "악마화": ["evaluation", "interpretation", "complexity", "emotion", "rumination"],
-    "미워": ["evaluation", "interpretation", "emotion", "love"],
+    "미워": ["evaluation", "interpretation", "emotion", "love", "self-dislike"],
     "자존감": ["self-esteem", "self-love", "self-image", "evaluation", "self-standard"],
-    "자기비난": ["self-esteem", "self-compassion", "evaluation", "perfectionism"],
-    "사랑": ["love", "receiving", "reciprocity", "relationships", "confidence", "fear"],
-    "친구": ["relationships", "people", "feedback", "future"],
-    "사람": ["relationships", "people", "evaluation", "future"],
-    "실패": ["failure", "success", "effort", "uncertainty", "self-standard"],
-    "성공": ["success", "attribution", "collaboration", "self-standard", "career"],
-    "일": ["work", "motivation", "success", "effort", "regulation"],
+    "자기수용": ["self-acceptance", "self-love", "self-friendship", "imperfection", "contentment"],
+    "자기혐오": ["self-dislike", "self-acceptance", "self-love", "self-doubt"],
+    "자기비난": ["self-esteem", "self-compassion", "evaluation", "perfectionism", "self-criticism"],
+    "사랑": ["love", "receiving", "reciprocity", "relationships", "confidence", "fear", "care"],
+    "친구": ["relationships", "people", "feedback", "future", "friendship"],
+    "친밀": ["relationships", "closeness", "boundaries", "trust", "respect"],
+    "사람": ["relationships", "people", "evaluation", "future", "personhood"],
+    "팬": ["fans", "relationships", "gratitude", "reciprocity", "responsibility"],
+    "실패": ["failure", "success", "effort", "uncertainty", "self-standard", "fairness"],
+    "성공": ["success", "attribution", "collaboration", "self-standard", "career", "luck"],
+    "일": ["work", "motivation", "success", "effort", "regulation", "activation"],
+    "휴식": ["rest", "self-care", "limits", "sustainability", "recovery"],
+    "쉬": ["rest", "self-care", "limits", "recovery"],
+    "책임": ["responsibility", "accountability", "fans", "work"],
+    "부담": ["burden", "responsibility", "fear", "expectations"],
+    "완벽": ["perfection", "perfectionism", "perspective", "flexibility", "self-standard"],
     "불안": ["fear", "uncertainty", "self-protection", "emotion"],
     "두려": ["fear", "uncertainty", "self-protection", "confidence"],
-    "공허": ["emotion", "avoidance", "recovery", "work"],
+    "외로": ["loneliness", "emotion", "relationships", "success"],
+    "공허": ["emotion", "avoidance", "recovery", "work", "emptiness"],
     "감정": ["emotion", "acceptance", "rumination", "recovery"],
-    "과거": ["past", "letting-go", "growth", "closure"],
-    "후회": ["past", "decision", "effort", "closure"],
-    "비교": ["evaluation", "self-standard", "self-image"],
+    "위로": ["care", "companionship", "emotion", "relationships", "reciprocity"],
+    "상실": ["loss", "grief", "continuity", "care", "emotion"],
+    "일기": ["journaling", "memory", "emotion", "time", "self-observation"],
+    "기록": ["journaling", "memory", "records", "time", "self-observation"],
+    "과거": ["past", "letting-go", "growth", "closure", "hindsight"],
+    "후회": ["past", "decision", "effort", "closure", "regret"],
+    "비교": ["evaluation", "self-standard", "self-image", "comparison"],
     "평가": ["evaluation", "self-standard", "identity"],
     "인정": ["recognition", "self-standard", "success", "evaluation"],
+    "행복": ["happiness", "contentment", "meaning", "self-acceptance"],
+    "인기": ["fame", "success", "fear", "self-protection", "evaluation"],
+    "꿈": ["dreams", "future", "coping", "identity"],
 }
 
 
@@ -157,7 +175,7 @@ def retrieve_iu_evidence(message: str, context: dict | None, limit: int = 14) ->
 
     if len(chosen) < min(8, limit):
         anchors = sorted(IU_BRAIN, key=lambda r: (r.get("year", 0), r.get("id", "")))
-        target_years = [2010, 2011, 2012, 2013, 2014, 2015, 2020, 2021, 2022, 2024, 2025, 2026]
+        target_years = [2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025, 2026]
         for year in target_years:
             candidates = [r for r in anchors if r.get("year") == year and r.get("id") not in seen_ids]
             if candidates:
@@ -195,7 +213,7 @@ IU_SYSTEM = """너는 'IU Brain'이라는 연구 기반 조언 엔진이다.
 
 @app.get("/health")
 def health():
-    return {"ok": True, "service": "my-sea", "version": "3.7-iu-brain-batches", "iu_brain_observations": len(IU_BRAIN)}
+    return {"ok": True, "service": "my-sea", "version": "3.8-iu-brain-retrieval", "iu_brain_observations": len(IU_BRAIN)}
 
 
 @app.get("/api/iu-brain/status", dependencies=[Depends(verify_password)])
