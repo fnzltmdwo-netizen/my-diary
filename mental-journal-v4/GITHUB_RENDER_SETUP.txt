@@ -1,0 +1,36 @@
+마음결 v4 — GitHub → Render 자동배포 구성
+
+GitHub 저장소
+- fnzltmdwo-netizen/my-diary
+- 마음결 코드는 mental-journal-v4/ 폴더에 있음
+- 기존 나의 바다(my-sea-diary) 코드는 그대로 유지
+
+Render Blueprint
+- 저장소 루트의 render.yaml이 두 서비스를 함께 정의함
+- 기존: my-sea-diary
+- 신규: maeumgyeol-v4
+- 신규 서비스 rootDir: mental-journal-v4
+- GitHub main의 커밋을 기준으로 Render가 자동배포할 수 있게 구성
+
+처음 Render에서 할 일
+1. 기존 my-diary Blueprint가 있다면 Blueprint Sync를 실행
+   또는 New > Blueprint에서 GitHub 저장소 fnzltmdwo-netizen/my-diary 선택
+2. 신규 maeumgyeol-v4 서비스의 Secret 환경변수 입력
+   OPENAI_API_KEY = 본인의 OpenAI API Key
+   APP_TOKEN = 본인만 아는 긴 임의 문자열
+   DEFAULT_MODEL = gpt-5.6-luna (render.yaml 기본값 있음)
+3. Apply / Sync
+4. 배포 후 maeumgyeol-v4의 onrender.com 주소 접속
+5. 마음결 > 설정 > AI 마음동행
+   - AI 서버 주소: 비워둠 (프론트와 백엔드가 같은 Render 서비스)
+   - 앱 잠금 토큰: Render APP_TOKEN과 동일하게 입력
+   - 연결 테스트
+
+보안
+- OpenAI API Key는 GitHub 파일에 넣지 않음
+- .env는 저장소 .gitignore 대상
+- APP_TOKEN도 Render Secret 환경변수에서만 관리
+- 브라우저의 테스트용 API Key는 sessionStorage에서만 유지되고 JSON 백업에 포함되지 않음
+
+업데이트
+- 이후 마음결 소스를 GitHub main에 수정/푸시하면 Render 자동배포 흐름으로 업데이트 가능
