@@ -10,15 +10,15 @@ on:
       max_videos:
         description: "이번 실행 최대 검증 영상 수"
         required: false
-        default: "500"
+        default: "400"
       max_ai_calls:
         description: "자막 관찰치 추출 최대 AI 호출 수"
         required: false
-        default: "650"
+        default: "500"
       max_discovery_calls:
         description: "웹검색 발견 호출 수(예산 절약용)"
         required: false
-        default: "3"
+        default: "2"
 
 permissions:
   contents: write
@@ -57,7 +57,7 @@ jobs:
           MAX_VIDEOS: ${{ inputs.max_videos }}
           MAX_AI_CALLS: ${{ inputs.max_ai_calls }}
           MAX_DISCOVERY_CALLS: ${{ inputs.max_discovery_calls }}
-          SEARCH_BATCH_SIZE: "20"
+          SEARCH_BATCH_SIZE: "25"
         run: python iu_corpus/collector_v3.py
       - name: Show final count
         if: always()
@@ -67,7 +67,7 @@ jobs:
           p=Path('iu_corpus/observations.jsonl')
           n=sum(1 for x in p.read_text(encoding='utf-8').splitlines() if x.strip()) if p.exists() else 0
           print(f"TOTAL_OBSERVATIONS={n}")
-          print("Budget mode: discovery <= 3 calls, extraction <= 650 Luna calls")
+          print("Budget mode: discovery <= 2 calls, extraction <= 500 Luna calls")
           PY
           cat iu_corpus/run_summary.json 2>/dev/null || true
       - name: Commit corpus growth
