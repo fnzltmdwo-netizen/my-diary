@@ -4,7 +4,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from fastapi import Depends, FastAPI, Header, HTTPException
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, HTMLResponse
 from pydantic import BaseModel
 from sqlalchemy import Column, DateTime, Integer, Text
 from sqlalchemy.orm import Session
@@ -15,7 +15,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 FRONTEND_DIR = BASE_DIR / "frontend"
 APP_PASSWORD = os.getenv("APP_PASSWORD", "").strip()
 
-app = FastAPI(title="나의 바다", version="3.1-server")
+app = FastAPI(title="나의 바다", version="3.2-server")
 
 
 class AppState(Base):
@@ -44,7 +44,7 @@ def verify_password(x_app_password: str | None = Header(default=None)) -> None:
 
 @app.get("/health")
 def health():
-    return {"ok": True, "service": "my-sea"}
+    return {"ok": True, "service": "my-sea", "version": "3.2-server"}
 
 
 @app.get("/api/state", dependencies=[Depends(verify_password)])
@@ -77,9 +77,12 @@ def put_state(body: StateBody, db: Session = Depends(get_db)):
     return {"ok": True, "updated_at": now.isoformat()}
 
 
-@app.get("/")
+@app.get("/", response_class=HTMLResponse)
 def index():
-    return FileResponse(FRONTEND_DIR / "index.html")
+    index_file = FRONTEND_DIR / "index.html"
+    if index_file.is_file():
+        return HTMLResponse(index_file.read_text(encoding="utf-8"))
+    return HTMLResponse("<h1>나의 바다</h1><p>Frontend file missing.</p>", status_code=200)
 
 
 @app.get("/{path:path}")
@@ -91,4 +94,7 @@ def spa_fallback(path: str):
         raise HTTPException(status_code=404)
     if candidate.is_file():
         return FileResponse(candidate)
-    return FileResponse(FRONTEND_DIR / "index.html")
+    index_file = FRONTEND_DIR / "index.html"
+    if index_file.is_file():
+        return HTMLResponse(index_file.read_text(encoding="utf-8"))
+    raise HTTPException(status_code=404)
