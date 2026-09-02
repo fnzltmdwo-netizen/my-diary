@@ -3,6 +3,7 @@ import os
 import re
 import urllib.error
 import urllib.request
+from collections import Counter
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -20,7 +21,7 @@ IU_BRAIN_DIR = BASE_DIR / "iu_brain"
 APP_PASSWORD = os.getenv("APP_PASSWORD", "").strip()
 SERVER_OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "").strip()
 
-app = FastAPI(title="나의 바다", version="3.8-iu-brain-retrieval")
+app = FastAPI(title="나의 바다", version="3.9-iu-brain-evaluation")
 
 
 class AppState(Base):
@@ -56,8 +57,7 @@ def load_iu_brain() -> list[dict]:
     by_id: dict[str, dict] = {}
     if not IU_BRAIN_DIR.exists():
         return []
-    files = sorted(IU_BRAIN_DIR.glob("verified_observations*.jsonl"))
-    for path in files:
+    for path in sorted(IU_BRAIN_DIR.glob("verified_observations*.jsonl")):
         try:
             lines = path.read_text(encoding="utf-8").splitlines()
         except Exception:
@@ -67,43 +67,79 @@ def load_iu_brain() -> list[dict]:
                 continue
             try:
                 row = json.loads(line)
-                if row.get("id") and row.get("observation"):
-                    row.setdefault("brain_file", path.name)
-                    by_id[str(row["id"])] = row
             except Exception:
                 continue
+            if row.get("id") and row.get("observation"):
+                row.setdefault("brain_file", path.name)
+                by_id[str(row["id"])] = row
     return list(by_id.values())
 
 
 IU_BRAIN = load_iu_brain()
 
 TOPIC_ALIASES = {
+    # 사람 · 관계 · 경계
     "경계": ["relationships", "closure", "self-protection", "interpretation", "future", "boundaries", "respect"],
     "거리": ["relationships", "closure", "self-protection", "boundaries"],
     "선": ["boundaries", "relationships", "respect", "closeness"],
-    "신뢰": ["relationships", "feedback", "future", "trust"],
+    "신뢰": ["relationships", "feedback", "future", "trust", "psychological-safety"],
     "떠났": ["relationships", "loss", "closure", "future"],
     "버림": ["relationships", "loss", "self-protection", "future"],
     "악마화": ["evaluation", "interpretation", "complexity", "emotion", "rumination"],
     "미워": ["evaluation", "interpretation", "emotion", "love", "self-dislike"],
+    "친구": ["relationships", "people", "feedback", "future", "friendship"],
+    "친밀": ["relationships", "closeness", "boundaries", "trust", "respect"],
+    "사람": ["relationships", "people", "evaluation", "future", "personhood"],
+    "가치관": ["values", "moral-alignment", "relationships", "friendship"],
+    "오해": ["interpretation", "projection", "categorization", "relationships"],
+    "먼저 연락": ["initiative", "agency", "friendship", "relationships"],
+    "증명": ["proof", "action", "commitment", "relationships"],
+    "팬": ["fans", "relationships", "gratitude", "reciprocity", "responsibility"],
+
+    # 자기애 · 자기수용 · 자기비난
     "자존감": ["self-esteem", "self-love", "self-image", "evaluation", "self-standard"],
     "자기수용": ["self-acceptance", "self-love", "self-friendship", "imperfection", "contentment"],
     "자기혐오": ["self-dislike", "self-acceptance", "self-love", "self-doubt"],
     "자기비난": ["self-esteem", "self-compassion", "evaluation", "perfectionism", "self-criticism"],
+    "자책": ["self-criticism", "self-compassion", "failure", "evaluation"],
+    "부족": ["imperfection", "self-acceptance", "self-evaluation", "growth"],
+    "엄격": ["self-standard", "self-compassion", "perfection", "standards"],
+    "게으": ["self-criticism", "self-evaluation", "work", "activation"],
+    "무기력": ["lethargy", "self-observation", "activation", "acceptance"],
+    "자격": ["self-worth", "receiving-love", "approval", "responsibility"],
+    "완벽": ["perfection", "perfectionism", "perspective", "flexibility", "self-standard", "completion"],
+
+    # 성공 · 실패 · 비교 · 타인의 평가
+    "실패": ["failure", "success", "effort", "uncertainty", "self-standard", "fairness", "attribution"],
+    "성공": ["success", "attribution", "collaboration", "self-standard", "career", "luck", "agency"],
+    "성과": ["success", "achievement", "attribution", "evaluation", "process"],
+    "실적": ["success", "ranking", "evaluation", "achievement"],
+    "순위": ["ranking", "popularity", "success", "status", "evaluation"],
+    "1등": ["ranking", "success", "status", "goals"],
+    "일등": ["ranking", "success", "status", "goals"],
+    "비교": ["comparison", "evaluation", "self-standard", "self-image", "admiration"],
+    "남들은": ["comparison", "evaluation", "self-standard", "self-image"],
+    "남보다": ["comparison", "evaluation", "ranking", "self-standard"],
+    "부럽": ["comparison", "admiration", "individuality", "self-context"],
+    "열등": ["comparison", "self-image", "evaluation", "self-worth"],
+    "평가": ["evaluation", "self-standard", "identity", "feedback", "scope"],
+    "칭찬": ["evaluation", "feedback", "recognition", "self-evaluation"],
+    "악플": ["evaluation", "feedback", "self-protection", "selective-attention"],
+    "인정": ["recognition", "self-standard", "success", "evaluation"],
+    "무시": ["evaluation", "status", "self-standard", "recognition"],
+    "평판": ["evaluation", "popularity", "fame", "status"],
+    "기대": ["expectations", "evaluation", "fear", "responsibility"],
+    "실망": ["feedback", "evaluation", "relationships", "expectations"],
+    "인기": ["fame", "popularity", "success", "fear", "self-protection", "evaluation"],
+
+    # 감정 · 일 · 회복
     "사랑": ["love", "receiving", "reciprocity", "relationships", "confidence", "fear", "care"],
-    "친구": ["relationships", "people", "feedback", "future", "friendship"],
-    "친밀": ["relationships", "closeness", "boundaries", "trust", "respect"],
-    "사람": ["relationships", "people", "evaluation", "future", "personhood"],
-    "팬": ["fans", "relationships", "gratitude", "reciprocity", "responsibility"],
-    "실패": ["failure", "success", "effort", "uncertainty", "self-standard", "fairness"],
-    "성공": ["success", "attribution", "collaboration", "self-standard", "career", "luck"],
     "일": ["work", "motivation", "success", "effort", "regulation", "activation"],
     "휴식": ["rest", "self-care", "limits", "sustainability", "recovery"],
     "쉬": ["rest", "self-care", "limits", "recovery"],
     "책임": ["responsibility", "accountability", "fans", "work"],
     "부담": ["burden", "responsibility", "fear", "expectations"],
-    "완벽": ["perfection", "perfectionism", "perspective", "flexibility", "self-standard"],
-    "불안": ["fear", "uncertainty", "self-protection", "emotion"],
+    "불안": ["fear", "uncertainty", "self-protection", "emotion", "anxiety"],
     "두려": ["fear", "uncertainty", "self-protection", "confidence"],
     "외로": ["loneliness", "emotion", "relationships", "success"],
     "공허": ["emotion", "avoidance", "recovery", "work", "emptiness"],
@@ -114,11 +150,7 @@ TOPIC_ALIASES = {
     "기록": ["journaling", "memory", "records", "time", "self-observation"],
     "과거": ["past", "letting-go", "growth", "closure", "hindsight"],
     "후회": ["past", "decision", "effort", "closure", "regret"],
-    "비교": ["evaluation", "self-standard", "self-image", "comparison"],
-    "평가": ["evaluation", "self-standard", "identity"],
-    "인정": ["recognition", "self-standard", "success", "evaluation"],
-    "행복": ["happiness", "contentment", "meaning", "self-acceptance"],
-    "인기": ["fame", "success", "fear", "self-protection", "evaluation"],
+    "행복": ["happiness", "contentment", "meaning", "self-acceptance", "wellbeing"],
     "꿈": ["dreams", "future", "coping", "identity"],
 }
 
@@ -131,6 +163,7 @@ def retrieve_iu_evidence(message: str, context: dict | None, limit: int = 14) ->
     context_text = json.dumps(context or {}, ensure_ascii=False)
     query = f"{message}\n{context_text}".lower()
     q_terms = normalized_terms(query)
+
     wanted_topics: set[str] = set()
     for trigger, topics in TOPIC_ALIASES.items():
         if trigger in query:
@@ -144,44 +177,62 @@ def retrieve_iu_evidence(message: str, context: dict | None, limit: int = 14) ->
             str(row.get("quote", "")),
             " ".join(topics),
             str(row.get("source", "")),
+            str(row.get("publisher", "")),
         ]).lower()
         h_terms = normalized_terms(hay)
         overlap = len(q_terms & h_terms)
         topic_overlap = len(wanted_topics & topics)
         score = overlap * 1.0 + topic_overlap * 5.0
+
         tier = row.get("tier")
         if tier == "A++":
-            score += 0.4
+            score += 0.5
         elif tier == "A+":
-            score += 0.3
+            score += 0.35
         elif tier in {"A", "B+"}:
-            score += 0.1
-        for t in wanted_topics:
-            if t in hay:
+            score += 0.15
+
+        for topic in wanted_topics:
+            if topic in hay:
                 score += 1.5
+
         scored.append((score, row))
 
     scored.sort(key=lambda x: (x[0], x[1].get("year", 0)), reverse=True)
+
     chosen: list[dict] = []
     seen_ids: set[str] = set()
+    year_counts: Counter = Counter()
 
+    # 관련성은 유지하되 한 시기의 발언만 과대표집하지 않는다.
     for score, row in scored:
-        if score <= 0 or row["id"] in seen_ids:
+        if score <= 0 or row.get("id") in seen_ids:
+            continue
+        year = row.get("year")
+        if year and year_counts[year] >= 3:
             continue
         chosen.append(row)
         seen_ids.add(row["id"])
+        if year:
+            year_counts[year] += 1
         if len(chosen) >= limit:
             break
 
+    # 질문이 넓거나 직접 일치 자료가 적으면 시간축 앵커를 보충한다.
     if len(chosen) < min(8, limit):
         anchors = sorted(IU_BRAIN, key=lambda r: (r.get("year", 0), r.get("id", "")))
-        target_years = [2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025, 2026]
+        target_years = list(range(2010, 2027))
         for year in target_years:
-            candidates = [r for r in anchors if r.get("year") == year and r.get("id") not in seen_ids]
-            if candidates:
-                row = candidates[0]
-                chosen.append(row)
-                seen_ids.add(row["id"])
+            candidates = [
+                r for r in anchors
+                if r.get("year") == year and r.get("id") not in seen_ids
+            ]
+            if not candidates:
+                continue
+            row = candidates[0]
+            chosen.append(row)
+            seen_ids.add(row["id"])
+            year_counts[year] += 1
             if len(chosen) >= min(8, limit):
                 break
 
@@ -190,7 +241,7 @@ def retrieve_iu_evidence(message: str, context: dict | None, limit: int = 14) ->
 
 IU_SYSTEM = """너는 'IU Brain'이라는 연구 기반 조언 엔진이다.
 실제 아이유 본인인 척하거나 아이유가 사용자의 상황을 직접 봤다고 주장하지 않는다. 말투를 복제하는 챗봇도 아니다.
-아래에 제공되는 EVIDENCE PACK은 아이유의 공개 인터뷰·직접 발언을 검증해 요약한 관찰치다. 답변은 이 자료에서 드러나는 사고방식과 시간에 따른 변화를 우선 근거로 삼는다.
+아래 EVIDENCE PACK은 아이유의 공개 인터뷰·직접 발언을 검증해 요약한 관찰치다. 답변은 이 자료에서 드러나는 사고방식과 시간에 따른 변화를 우선 근거로 삼는다.
 
 원칙:
 - 사용자의 감정을 먼저 정확히 이해하되 사실과 해석을 구분한다.
@@ -199,10 +250,12 @@ IU_SYSTEM = """너는 'IU Brain'이라는 연구 기반 조언 엔진이다.
 - 아이유의 사적 심리, 진단, 숨은 의도는 추측하지 않는다.
 - 공개 자료가 뒷받침하지 않는 조언은 '일반적인 관점'이라고 구분한다.
 - 이해와 허용, 용서와 신뢰 회복, 감정과 행동을 서로 구분한다.
-- 사용자의 최근 기록이 제공되면 그것을 현재 상황의 맥락으로만 사용하고, 아이유 자료보다 우위의 사실로 취급한다.
+- 성공·실패·평가를 다룰 때 외부 결과와 자기 가치, 주관적 안녕을 자동으로 같은 축으로 취급하지 않는다.
+- 비교를 다룰 때 타인의 강점을 인정하는 것과 자신을 열등하다고 판결하는 것을 구분한다.
+- 사용자의 최근 기록이 제공되면 현재 상황의 맥락으로만 사용한다.
 - 짧은 원문 문구는 필요할 때만 1개 정도 사용하고 대부분은 요약한다.
 
-답변 형식은 자연스럽게 다음 흐름을 따른다.
+답변 흐름:
 1. 지금 네 마음에서 보이는 것
 2. IU Brain 자료를 시간축으로 겹쳐 보면
 3. 지금 적용할 수 있는 관점
@@ -213,14 +266,24 @@ IU_SYSTEM = """너는 'IU Brain'이라는 연구 기반 조언 엔진이다.
 
 @app.get("/health")
 def health():
-    return {"ok": True, "service": "my-sea", "version": "3.8-iu-brain-retrieval", "iu_brain_observations": len(IU_BRAIN)}
+    return {
+        "ok": True,
+        "service": "my-sea",
+        "version": "3.9-iu-brain-evaluation",
+        "iu_brain_observations": len(IU_BRAIN),
+    }
 
 
 @app.get("/api/iu-brain/status", dependencies=[Depends(verify_password)])
 def iu_brain_status():
     years = sorted({x.get("year") for x in IU_BRAIN if x.get("year")})
     files = sorted({x.get("brain_file") for x in IU_BRAIN if x.get("brain_file")})
-    return {"observations": len(IU_BRAIN), "years": years, "brain_files": files, "server_key_configured": bool(SERVER_OPENAI_API_KEY)}
+    return {
+        "observations": len(IU_BRAIN),
+        "years": years,
+        "brain_files": files,
+        "server_key_configured": bool(SERVER_OPENAI_API_KEY),
+    }
 
 
 @app.get("/api/state", dependencies=[Depends(verify_password)])
@@ -232,7 +295,10 @@ def get_state(db: Session = Depends(get_db)):
         state = json.loads(row.payload)
     except Exception:
         state = {}
-    return {"state": state, "updated_at": row.updated_at.isoformat() if row.updated_at else None}
+    return {
+        "state": state,
+        "updated_at": row.updated_at.isoformat() if row.updated_at else None,
+    }
 
 
 @app.put("/api/state", dependencies=[Depends(verify_password)])
@@ -240,6 +306,7 @@ def put_state(body: StateBody, db: Session = Depends(get_db)):
     payload = json.dumps(body.state, ensure_ascii=False, separators=(",", ":"))
     if len(payload.encode("utf-8")) > 8 * 1024 * 1024:
         raise HTTPException(status_code=413, detail="State is too large")
+
     now = datetime.now(timezone.utc)
     row = db.get(AppState, 1)
     if row:
@@ -256,7 +323,10 @@ def put_state(body: StateBody, db: Session = Depends(get_db)):
 def iu_advice(body: IUAdviceBody, x_ai_key: str | None = Header(default=None)):
     key = SERVER_OPENAI_API_KEY or (x_ai_key or "").strip()
     if not key:
-        raise HTTPException(status_code=400, detail="OPENAI_API_KEY is not configured on the server; a temporary browser API key is required")
+        raise HTTPException(
+            status_code=400,
+            detail="OPENAI_API_KEY is not configured on the server; a temporary browser API key is required",
+        )
 
     msg = (body.message or "").strip()
     if not msg:
@@ -273,7 +343,10 @@ def iu_advice(body: IUAdviceBody, x_ai_key: str | None = Header(default=None)):
 
     context_text = ""
     if body.context:
-        context_text = "\n\n사용자가 선택적으로 제공한 최근 기록:\n" + json.dumps(body.context, ensure_ascii=False)[:10000]
+        context_text = (
+            "\n\n사용자가 선택적으로 제공한 최근 기록:\n"
+            + json.dumps(body.context, ensure_ascii=False)[:10000]
+        )
 
     user_input = (
         f"사용자의 현재 고민:\n{msg}{context_text}\n\n"
@@ -282,7 +355,11 @@ def iu_advice(body: IUAdviceBody, x_ai_key: str | None = Header(default=None)):
         + "\n\n이 자료를 단순 나열하지 말고, 시기별 공통점·변화·긴장을 비교해 사용자의 상황에 적용해라."
     )
 
-    model = body.model if body.model in {"gpt-5.6-luna", "gpt-5.6-terra", "gpt-5.6-sol"} else "gpt-5.6-luna"
+    model = (
+        body.model
+        if body.model in {"gpt-5.6-luna", "gpt-5.6-terra", "gpt-5.6-sol"}
+        else "gpt-5.6-luna"
+    )
     payload = {
         "model": model,
         "instructions": IU_SYSTEM,
@@ -294,9 +371,13 @@ def iu_advice(body: IUAdviceBody, x_ai_key: str | None = Header(default=None)):
     req = urllib.request.Request(
         "https://api.openai.com/v1/responses",
         data=json.dumps(payload).encode("utf-8"),
-        headers={"Authorization": f"Bearer {key}", "Content-Type": "application/json"},
+        headers={
+            "Authorization": f"Bearer {key}",
+            "Content-Type": "application/json",
+        },
         method="POST",
     )
+
     try:
         with urllib.request.urlopen(req, timeout=90) as r:
             data = json.loads(r.read().decode("utf-8"))
@@ -332,6 +413,7 @@ def iu_advice(body: IUAdviceBody, x_ai_key: str | None = Header(default=None)):
         }
         for e in evidence[:10]
     ]
+
     return {
         "text": text,
         "model": model,
@@ -343,7 +425,7 @@ def iu_advice(body: IUAdviceBody, x_ai_key: str | None = Header(default=None)):
 
 def index_file():
     html = (FRONTEND_DIR / "index.html").read_text(encoding="utf-8")
-    addon = '<script src="/ai-addon.js?v=37"></script>'
+    addon = '<script src="/ai-addon.js?v=39"></script>'
     if addon not in html:
         html = html.replace("</body>", addon + "</body>")
     return HTMLResponse(html, headers={"Cache-Control": "no-store, max-age=0"})
