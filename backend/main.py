@@ -21,7 +21,7 @@ IU_BRAIN_DIR = BASE_DIR / "iu_brain"
 APP_PASSWORD = os.getenv("APP_PASSWORD", "").strip()
 SERVER_OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "").strip()
 
-app = FastAPI(title="나의 바다", version="4.0-iu-brain-emotion")
+app = FastAPI(title="나의 바다", version="4.1-iu-brain-love")
 
 
 class AppState(Base):
@@ -86,7 +86,7 @@ TOPIC_ALIASES = {
     "떠났": ["relationships", "loss", "closure", "future"],
     "버림": ["relationships", "loss", "self-protection", "future"],
     "악마화": ["evaluation", "interpretation", "complexity", "emotion", "rumination"],
-    "미워": ["evaluation", "interpretation", "emotion", "love", "self-dislike"],
+    "미워": ["evaluation", "interpretation", "emotion", "love", "hate", "self-dislike"],
     "친구": ["relationships", "people", "feedback", "future", "friendship"],
     "친밀": ["relationships", "closeness", "boundaries", "trust", "respect"],
     "사람": ["relationships", "people", "evaluation", "future", "personhood"],
@@ -132,8 +132,23 @@ TOPIC_ALIASES = {
     "실망": ["feedback", "evaluation", "relationships", "expectations"],
     "인기": ["fame", "popularity", "success", "fear", "self-protection", "evaluation"],
 
+    # 사랑 · 미움 · 받는 사랑 · 주는 사랑 · 위로 · 동행
+    "사랑": ["love", "receiving", "receiving-love", "giving", "reciprocity", "relationships", "confidence", "fear", "care", "companionship"],
+    "사랑받": ["love", "receiving", "receiving-love", "relationships", "self-worth", "gratitude"],
+    "사랑해": ["love", "expression", "giving", "relationships", "care"],
+    "애정": ["love", "attachment", "care", "relationships", "commitment"],
+    "보답": ["reciprocity", "receiving-love", "giving", "responsibility", "love"],
+    "동행": ["companionship", "love", "care", "support", "relationships"],
+    "곁": ["companionship", "care", "support", "love", "relationships"],
+    "돌봄": ["care", "love", "support", "self-care", "relationships"],
+    "친절": ["kindness", "love", "social-contagion", "values", "restraint"],
+    "혐오": ["hate", "love", "kindness", "self-awareness", "restraint", "values"],
+    "서운": ["emotion", "ambivalence", "relationships", "love", "interpretation"],
+    "미안": ["guilt", "gratitude", "love", "relationships", "ambivalence"],
+    "고마": ["gratitude", "love", "reciprocity", "relationships"],
+    "응원": ["support", "reciprocity", "love", "companionship", "relationships"],
+
     # 감정 · 불안 · 공허 · 반추 · 회복
-    "사랑": ["love", "receiving", "reciprocity", "relationships", "confidence", "fear", "care"],
     "일": ["work", "motivation", "success", "effort", "regulation", "activation"],
     "휴식": ["rest", "self-care", "limits", "sustainability", "recovery"],
     "쉬": ["rest", "self-care", "limits", "recovery"],
@@ -162,7 +177,7 @@ TOPIC_ALIASES = {
     "참고 있": ["emotion", "avoidance", "acceptance", "limits"],
     "회복": ["recovery", "emotion", "acceptance", "cycles", "self-care"],
     "다시 돌아": ["recovery", "return", "emotion", "cycles", "self-compassion"],
-    "위로": ["care", "companionship", "emotion", "relationships", "reciprocity"],
+    "위로": ["care", "companionship", "emotion", "relationships", "reciprocity", "support", "love"],
     "상실": ["loss", "grief", "continuity", "care", "emotion", "recovery"],
     "슬프": ["grief", "emotion", "acceptance", "time", "recovery"],
     "울고": ["emotion", "acceptance", "grief", "recovery"],
@@ -185,6 +200,16 @@ EMOTION_PRIORITY_TOPICS = {
     "cycles", "self-care", "limits", "grief", "lethargy", "malaise", "persistence",
 }
 
+LOVE_QUERY_TRIGGERS = (
+    "사랑", "사랑받", "사랑해", "애정", "보답", "동행", "곁", "돌봄", "친절",
+    "혐오", "미워", "서운", "미안", "고마", "응원", "위로",
+)
+LOVE_PRIORITY_TOPICS = {
+    "love", "receiving", "receiving-love", "giving", "reciprocity", "care", "companionship",
+    "support", "kindness", "attachment", "commitment", "gratitude", "ambivalence", "hate",
+    "self-awareness", "restraint", "nonpossessive-love", "shared-emotion",
+}
+
 
 def normalized_terms(text: str) -> set[str]:
     return {x.lower() for x in re.findall(r"[가-힣A-Za-z0-9_-]{2,}", text or "")}
@@ -201,6 +226,7 @@ def retrieve_iu_evidence(message: str, context: dict | None, limit: int = 14) ->
             wanted_topics.update(topics)
 
     emotion_query = any(trigger in query for trigger in EMOTION_QUERY_TRIGGERS)
+    love_query = any(trigger in query for trigger in LOVE_QUERY_TRIGGERS)
 
     scored: list[tuple[float, dict]] = []
     for row in IU_BRAIN:
@@ -231,6 +257,8 @@ def retrieve_iu_evidence(message: str, context: dict | None, limit: int = 14) ->
 
         if emotion_query:
             score += len(EMOTION_PRIORITY_TOPICS & topics) * 1.1
+        if love_query:
+            score += len(LOVE_PRIORITY_TOPICS & topics) * 1.1
 
         scored.append((score, row))
 
@@ -293,6 +321,11 @@ IU_SYSTEM = """너는 'IU Brain'이라는 연구 기반 조언 엔진이다.
 - 감정을 느끼는 것과 같은 장면·반응을 반복 확인하는 반추를 구분한다. 반추가 커진 상황에서는 더 많은 해석보다 현재로 돌아오는 작은 행동을 우선할 수 있다.
 - 회복을 '완전히 괜찮아짐'으로만 정의하지 않는다. 오늘 자기 자신을 버리지 않고 가능한 다음 행동을 하는 것도 회복의 일부다.
 - 일이나 일정으로 감정을 덮는 전략을 무조건 권하지 않는다. 공개 자료에서도 그 방식의 단기 효과와 한계가 함께 드러난다.
+- 사랑을 무조건 참기, 무제한 접근 허용, 자기희생과 동일시하지 않는다. 사랑과 경계·신뢰 조정은 동시에 가능하다.
+- 받은 사랑을 반드시 같은 양으로 갚아야 하는 빚으로 취급하지 않는다. 공개 자료에는 잘 받아주는 것, 서로 응원하는 것, 상대의 독립적인 행복을 바라는 것도 사랑의 형태로 나타난다.
+- 위로와 사랑을 다룰 때 상대의 문제를 대신 해결하는 것과 감당 가능한 범위에서 곁에 머무는 것을 구분한다.
+- 미움·짜증·서운함이 생겼다는 사실만으로 사랑이나 관계의 과거 전체를 무효화하지 않는다. 복합감정의 가능성을 보되 반복 행동과 현실적 경계는 별도로 판단한다.
+- '사랑이 미움을 이긴다'는 공개 가치관을 사용자의 안전을 희생하거나 해로운 관계를 유지해야 한다는 뜻으로 해석하지 않는다.
 - 불면·신체 증상에 관한 아이유의 공개 경험을 사용자의 의료 상태에 적용하거나 진단 근거로 사용하지 않는다.
 - 사용자의 최근 기록이 제공되면 현재 상황의 맥락으로만 사용한다.
 - 짧은 원문 문구는 필요할 때만 1개 정도 사용하고 대부분은 요약한다.
@@ -311,7 +344,7 @@ def health():
     return {
         "ok": True,
         "service": "my-sea",
-        "version": "4.0-iu-brain-emotion",
+        "version": "4.1-iu-brain-love",
         "iu_brain_observations": len(IU_BRAIN),
     }
 
@@ -467,7 +500,7 @@ def iu_advice(body: IUAdviceBody, x_ai_key: str | None = Header(default=None)):
 
 def index_file():
     html = (FRONTEND_DIR / "index.html").read_text(encoding="utf-8")
-    addon = '<script src="/ai-addon.js?v=40"></script>'
+    addon = '<script src="/ai-addon.js?v=41"></script>'
     if addon not in html:
         html = html.replace("</body>", addon + "</body>")
     return HTMLResponse(html, headers={"Cache-Control": "no-store, max-age=0"})
