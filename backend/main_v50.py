@@ -1,36 +1,23 @@
 """IU Brain v5.0 — six-axis megabatch layer.
 
-Builds on v4.8 shame/rejection. Adds bundled retrieval and reasoning support for:
-- uncertainty / control / waiting
+Builds on v4.9 uncertainty/control, preserving all earlier v4.x layers, then
+adds bundled retrieval and reasoning support for:
 - identity / authenticity / taste
 - time / aging / past vs present
 - collaboration / delegation / responsibility
 - needs / gratitude / receiving recognition
 - courage / challenge / comfort-zone expansion
 
-The layer keeps the verified public-statement corpus as evidence and does not
-claim access to IU's private thoughts or a literal mind model.
+Uncertainty / control / waiting remains provided by v4.9 and is integrated in
+the synthesis rules below. The verified public-statement corpus remains the
+source of evidence; this is not a literal model of IU's private mind.
 """
 
-from backend import main_v48 as v48
+from backend import main_v49 as v49
 
-core = v48.core
+core = v49.core
 
 MEGA_ALIASES = {
-    # 불확실성 · 통제 · 기다림
-    "불확실": ["uncertainty", "control", "flexibility", "preparation", "decision"],
-    "확답": ["uncertainty", "clarification", "questions", "decision"],
-    "답이 없": ["uncertainty", "waiting", "clarification", "acceptance"],
-    "모르겠": ["uncertainty", "questions", "clarification", "decision"],
-    "애매": ["uncertainty", "interpretation", "clarification", "questions"],
-    "기다려야": ["waiting", "uncertainty", "patience", "decision"],
-    "기다리는": ["waiting", "uncertainty", "patience", "time"],
-    "계획대로 안": ["control", "flexibility", "revision", "uncertainty"],
-    "계획이 틀": ["control", "flexibility", "revision", "uncertainty"],
-    "통제하고 싶": ["control", "uncertainty", "preparation", "limits"],
-    "확신이 없": ["uncertainty", "decision", "courage", "preparation"],
-    "예측": ["uncertainty", "anticipation", "future", "control"],
-
     # 정체성 · 진정성 · 자기취향
     "내 취향": ["taste", "identity", "self-standard", "authenticity"],
     "내답게": ["identity", "authenticity", "self-standard", "freedom"],
@@ -87,12 +74,12 @@ core.TOPIC_ALIASES.update(MEGA_ALIASES)
 
 MEGA_QUERY_TRIGGERS = tuple(MEGA_ALIASES.keys())
 MEGA_ENRICHMENT = (
-    " uncertainty control waiting preparation flexibility clarification questions anticipation"
     " identity authenticity taste self-standard self-honesty interpretation audience-agency"
     " time aging past change openness reinterpretation letting-go renewal"
     " collaboration delegation trust responsibility feedback teamwork mutual-development tradeoff"
     " needs desire specificity meaning gratitude receiving recognition effort reward"
     " challenge courage experience curiosity comfort-zone experimentation action"
+    " uncertainty control preparation flexibility waiting questions"
 )
 
 _original_retrieve = core.retrieve_iu_evidence
@@ -111,9 +98,8 @@ core.retrieve_iu_evidence = retrieve_iu_evidence_v50
 core.IU_SYSTEM += """
 
 6축 메가배치 추가 판단 원칙:
-- 불확실한 상황에서 모르는 부분을 사실처럼 채우지 않는다. 먼저 확인 가능한 사실, 질문해서 얻을 정보, 준비할 수 있는 부분, 통제 불가능한 결과를 나눈다.
+- v4.9의 불확실성 원칙을 유지한다. 모르는 부분을 사실처럼 채우지 않고, 확인 가능한 사실·질문 가능한 정보·통제 가능한 준비·통제 불가능한 결과를 나눈다.
 - 준비를 많이 했다는 이유로 준비한 계획을 현실보다 우선하지 않는다. 현실이 달라지면 준비를 수정하거나 놓을 수 있다.
-- 답을 아직 모른다는 상태 자체를 실패로 취급하지 않는다. 결정에 필요한 정보가 더 필요한지, 지금은 기다림이 필요한지, 작은 실험이 가능한지 구분한다.
 - 타인의 취향·평가가 존재하는 것과 자신의 취향·기준을 버려야 하는 것을 동일시하지 않는다. 다른 사람이 싫어할 수 있어도 자신은 좋아할 수 있다.
 - 진정성을 모든 사실의 고백이나 자전적 표현과 동일시하지 않는다. 상상·역할·창작을 사용하더라도 자신의 기준과 책임에 충실할 수 있다.
 - 할 말이 없거나 진심이 아닌 상태에서 억지 산출을 계속하는 것을 항상 성실함으로 보지 않는다. 기다림·수정·중단이 더 책임 있는 선택일 수 있다.
@@ -148,6 +134,7 @@ def _health_v50():
         "anger_release": True,
         "checking_comparison": True,
         "shame_rejection": True,
+        "uncertainty_control": True,
         "six_axis_megabatch": True,
     }
 
