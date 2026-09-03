@@ -252,6 +252,10 @@ PRINCIPLE_ALIASES = {
     "연봉": ["직무 전환", "4000만원", "목표"],
     "무기력": ["아무것도 하기 싫음", "게으름", "에너지"],
     "완벽": ["완벽한 준비", "시작 못함", "계획"],
+    "쳐다": ["시선", "주목", "타인의 평가", "내가 잘못했나"],
+    "시선": ["쳐다봄", "주목", "타인의 평가", "자의식"],
+    "사람들이": ["타인의 시선", "사회적 평가", "주목"],
+    "무서": ["불안", "위험", "경계", "시선"],
 }
 
 
@@ -628,7 +632,7 @@ def iu_advice(body: IUAdviceBody, x_ai_key: str | None = Header(default=None)):
 
 def index_file():
     html = (FRONTEND_DIR / "index.html").read_text(encoding="utf-8")
-    addon = '<script src="/ai-addon.js?v=60"></script>'
+    addon = '<script src="/ai-addon.js?v=70"></script>'
     if addon not in html:
         html = html.replace("</body>", addon + "</body>")
     return HTMLResponse(html, headers={"Cache-Control": "no-store, max-age=0"})
