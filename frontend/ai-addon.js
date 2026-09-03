@@ -36,7 +36,7 @@
       <div class="iu-question"><b>3. 이해와 허용은 같은가?</b><span>이해해도 거리를 둘 수 있고, 용서해도 다시 믿지 않을 수 있어요.</span></div>
       <div class="iu-question"><b>4. 지금의 감정이 미래의 예언인가?</b><span>현재의 느낌은 현재의 상태이지 미래에 대한 판결이 아닙니다.</span></div>
       <div class="iu-question"><b>5. 오늘의 나를 버리지 않으려면?</b><span>완벽한 해결 대신 오늘 가능한 한 행동을 고릅니다.</span></div>
-      <div class="iu-daily"><b>${new Intl.DateTimeFormat('ko-KR',{dateStyle:'long',weekday:'short'}).format(new Date())}의 나도 여기 있어요.</b><div class="body">괜찮아. 아직 확정된 사실보다 내 마음이 붙인 해석이 더 클 수도 있어. 오늘은 그것을 알아차린 것만으로 충분해.</div></div>`;
+      <div class="iu-daily"><b>${new Intl.DateTimeFormat('ko-KR',{year:'numeric',month:'long',day:'numeric',weekday:'short'}).format(new Date())}의 나도 여기 있어요.</b><div class="body">괜찮아. 아직 확정된 사실보다 내 마음이 붙인 해석이 더 클 수도 있어. 오늘은 그것을 알아차린 것만으로 충분해.</div></div>`;
   }
 
   let aiHistory=[];
