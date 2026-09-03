@@ -106,6 +106,11 @@
     renderChat(); loadBrainStatus();
   }
 
-  function run(){injectStyle();restoreWriteLayout();addAIPage()}
+  function run(){
+    injectStyle();
+    const version=document.querySelector('.top h1 .small');if(version)version.textContent='v5.1.3';
+    restoreWriteLayout();
+    addAIPage();
+  }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(run,0));else setTimeout(run,0);
 })();
