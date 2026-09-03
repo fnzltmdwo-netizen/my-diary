@@ -119,14 +119,14 @@ TIME(과거와 지금의 변화) / CONTROL(통제 가능한 것) / DELEGATE(혼�
 RISK(실제 위험과 불편함) / EXPERIENCE(결과 외 얻는 경험) / NEXT(작은 다음 행동).
 """
 
-core.app.version = "5.1-principles-coach"
+core.app.version = "5.1.1-principles-coach"
 
 
 def _health_v50():
     return {
         "ok": True,
         "service": "my-sea",
-        "version": "5.1-principles-coach",
+        "version": "5.1.1-principles-coach",
         "iu_brain_observations": len(core.IU_BRAIN),
         "principle_situations": len(core.PRINCIPLE_SITUATIONS),
         "decision_arbitration": True,

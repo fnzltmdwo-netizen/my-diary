@@ -98,7 +98,7 @@
       <div class="chips"><button class="chip" data-iu-preset="답장이 없어서 나를 피하는 것 같고 불안해.">답장 불안</button><button class="chip" data-iu-preset="내가 경계를 세웠더니 상대가 떠났어. 내가 너무한 건지 자꾸 흔들려.">경계 후 죄책감</button><button class="chip" data-iu-preset="상대가 잘 지내는 모습을 보고 또 나쁜 사람이라고 생각하고 있어.">악마화 알아차림</button><button class="chip" data-iu-preset="빚과 카드 문제 때문에 미래가 끝난 것처럼 느껴져. 지금 뭘 먼저 해야 할까?">돈·빚 불안</button></div>
       <button class="primary" id="iuAsk" style="margin-top:14px">원칙 코치로 바라보기</button><div class="iu-status" id="iuStatus"></div></div>
       <div class="card"><h3>지금의 나에게 건네는 말</h3><p class="small">답변 아래의 <b>근거 보기</b>를 열면 이번 조언에 실제로 연결된 연도·매체·공개발언을 확인할 수 있어요.</p><div id="iuChat"></div></div></div>`;
-    app.insertBefore(page,nav);
+    app.appendChild(page);
     const b=document.createElement('button'); b.dataset.p='ai'; b.innerHTML='✦<br>아이유'; nav.insertBefore(b,nav.lastElementChild);
     b.addEventListener('click',()=>{document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));page.classList.add('active');document.querySelectorAll('.nav button').forEach(x=>x.classList.remove('active'));b.classList.add('active');window.scrollTo({top:0,behavior:'smooth'})});
     document.querySelector('#iuAsk').onclick=askIU;
