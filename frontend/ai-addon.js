@@ -13,6 +13,10 @@
       .iu-bubble{border:1px solid var(--line);border-radius:18px;padding:14px;margin-top:10px;background:var(--solid)}.iu-bubble.user{background:rgba(129,110,183,.065)}.iu-bubble.ai{background:rgba(128,174,189,.075)}
       .iu-bubble .body{white-space:pre-wrap;line-height:1.72}.iu-status{font-size:11px;color:var(--muted);margin-top:9px}
       .iu-evidence{margin-top:12px;border-top:1px dashed var(--line);padding-top:10px}.iu-evidence summary{cursor:pointer;color:var(--muted);font-size:11px;font-weight:700}.iu-source{display:block;text-decoration:none;color:inherit;border:1px solid var(--line);border-radius:13px;padding:9px 10px;margin-top:7px;background:rgba(255,255,255,.25)}.iu-source:hover{transform:translateY(-1px)}.iu-source b{font-size:11px}.iu-source span{display:block;font-size:10.5px;color:var(--muted);line-height:1.45;margin-top:3px}.iu-source em{font-style:normal;font-size:9px;border:1px solid var(--line);padding:2px 5px;border-radius:999px;margin-left:5px;color:var(--muted)}
+      .nav button{display:flex!important;flex-direction:column;align-items:center;justify-content:center;gap:3px;min-width:0;line-height:1!important}
+      .nav-icon{display:grid;place-items:center;width:23px;height:20px;font-size:17px;line-height:1;color:var(--muted);transition:transform .18s ease,color .18s ease}
+      .nav-label{font-size:9px;white-space:nowrap;color:inherit}
+      .nav button.active .nav-icon{color:var(--accent);transform:translateY(-1px) scale(1.08)}
       @media(max-width:780px){.iu-ai-row{grid-template-columns:1fr}.nav{width:calc(100% - 18px)!important}.nav button{font-size:8.5px!important}}
     `;
     document.head.appendChild(st);
@@ -106,11 +110,24 @@
     renderChat(); loadBrainStatus();
   }
 
+  function decorateNav(){
+    const items={
+      home:['⌂','홈'],write:['✎','기록'],people:['♡','관계'],boundaryPage:['◇','경계'],
+      letters:['✉','편지'],report:['▥','리포트'],archive:['▣','보관함'],ai:['✦','아이유']
+    };
+    document.querySelectorAll('.nav button[data-p]').forEach(button=>{
+      const item=items[button.dataset.p];if(!item)return;
+      button.innerHTML=`<span class="nav-icon" aria-hidden="true">${item[0]}</span><span class="nav-label">${item[1]}</span>`;
+      button.setAttribute('aria-label',item[1]);
+    });
+  }
+
   function run(){
     injectStyle();
-    const version=document.querySelector('.top h1 .small');if(version)version.textContent='v5.1.3';
+    const version=document.querySelector('.top h1 .small');if(version)version.textContent='v5.2';
     restoreWriteLayout();
     addAIPage();
+    decorateNav();
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(run,0));else setTimeout(run,0);
 })();
