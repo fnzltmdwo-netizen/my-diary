@@ -40,69 +40,68 @@
   }
 
   let aiHistory=[];
+  try{aiHistory=JSON.parse(sessionStorage.getItem('mySea.aiChat.v51')||'[]').slice(-12)}catch{}
+  function saveHistory(){sessionStorage.setItem('mySea.aiChat.v51',JSON.stringify(aiHistory.slice(-12)))}
   function evidenceHTML(x){
-    if(!x.evidence?.length)return '';
+    const principles=(x.principles||[]).map(p=>`<div class="iu-source"><b>${esc(p.id)} · ${esc(p.category||'원칙')}</b><span>${esc(p.scenario||'')}</span></div>`).join('');
+    if(!x.evidence?.length&&!principles)return '';
     const items=x.evidence.map(e=>`<a class="iu-source" href="${esc(e.url||'#')}" target="_blank" rel="noopener"><b>${esc(e.year)} · ${esc(e.publisher||'')}<em>${esc(e.tier||'')}</em></b><span>${esc(e.source||'')}</span><span>“${esc(e.quote||'')}”</span></a>`).join('');
-    return `<details class="iu-evidence"><summary>이번 답변의 근거 ${x.evidenceUsed||x.evidence.length}개 보기 · IU Brain 총 ${x.brainTotal||'?'}개</summary>${items}</details>`;
+    return `<details class="iu-evidence"><summary>연결 근거 보기 · 공개 관찰 ${x.evidenceUsed||0}개 · 적용 원칙 ${x.principlesUsed||0}개</summary>${principles}${items}</details>`;
   }
   function renderChat(){
     const box=document.querySelector('#iuChat'); if(!box)return;
     if(!aiHistory.length){box.innerHTML='<div class="empty">지금 마음을 적으면 관련 IU Brain 자료를 먼저 찾고, 그 자료를 겹쳐 본 답이 나타나요.</div>';return}
-    box.innerHTML=aiHistory.map(x=>`<div class="iu-bubble ${x.role==='user'?'user':'ai'}"><b>${x.role==='user'?'나':'IU Brain · 공개발언 기반 사고모델'}</b><div class="body">${esc(x.text)}</div>${x.role==='ai'?evidenceHTML(x):''}</div>`).join('');
+    box.innerHTML=aiHistory.map(x=>`<div class="iu-bubble ${x.role==='user'?'user':'ai'}"><b>${x.role==='user'?'나':'나의 바다 원칙 코치'}</b><div class="body">${esc(x.text)}</div>${x.role==='ai'?evidenceHTML(x):''}</div>`).join('');
   }
   function context(){
     if(!document.querySelector('#iuUseContext')?.checked)return null;
     try{
-      const entries=JSON.parse(localStorage.getItem('mySea.entries.v3')||'[]').slice(0,5).map(e=>({date:e.createdAt,emotion:e.emotion,intensity:e.intensity,fact:e.fact,meaning:e.meaning||e.interpretation,patterns:e.patterns,observer:e.observer,boundary:e.boundary,selfMsg:e.selfMsg||e.selfMessage,proof:e.proof}));
-      const boundary=JSON.parse(localStorage.getItem('mySea.boundary.v3')||'null');
-      return {recent_entries:entries,boundary_plan:boundary};
+      const appState=(typeof state==='object'&&state)||{};
+      const entries=(appState.entries||[]).slice(0,5).map(e=>({date:e.createdAt,emotion:e.emotion,intensity:e.intensity,fact:e.fact,meaning:e.meaning||e.interpretation,patterns:e.patterns,observer:e.observer,boundary:e.boundary,selfMsg:e.selfMsg||e.selfMessage,proof:e.proof}));
+      const draft={emotion:typeof emotion==='string'?emotion:'',intensity:document.querySelector('#intensity')?.value||'',fact:document.querySelector('#fact')?.value||'',meaning:document.querySelector('#meaning')?.value||'',observer:document.querySelector('#observer')?.value||'',boundary:document.querySelector('#boundary')?.value||'',selfMsg:document.querySelector('#selfmsg')?.value||''};
+      return {current_diary:draft,recent_entries:entries,boundary_plan:appState.boundary||null};
     }catch{return null}
   }
   async function loadBrainStatus(){
-    const meta=document.querySelector('#iuBrainMeta'), wrap=document.querySelector('#iuKeyWrap'), forget=document.querySelector('#iuForgetWrap'); if(!meta)return;
-    const appPw=sessionStorage.getItem('mySea.appPassword')||'';
+    const meta=document.querySelector('#iuBrainMeta'); if(!meta)return;
+    const appPw=sessionStorage.getItem('mySeaPw')||'';
     try{
       const r=await fetch('/api/iu-brain/status',{headers:{'X-App-Password':appPw}}); const d=await r.json(); if(!r.ok)throw new Error();
-      meta.innerHTML=`<span class="iu-badge">검증 관찰치 ${d.observations}개</span><span class="iu-badge">${(d.years||[])[0]||'?'}–${(d.years||[]).slice(-1)[0]||'?'} 시간축</span><span class="iu-badge">${d.server_key_configured?'서버 AI 키 연결됨':'브라우저 키 필요'}</span>`;
-      if(d.server_key_configured){if(wrap)wrap.style.display='none';if(forget)forget.style.display='none'}
+      meta.innerHTML=`<span class="iu-badge">검증 관찰치 ${d.observations}개</span><span class="iu-badge">개인 장면 원칙 ${d.principles||0}개</span><span class="iu-badge">${(d.years||[])[0]||'?'}–${(d.years||[]).slice(-1)[0]||'?'} 시간축</span><span class="iu-badge">${d.server_key_configured?'AI 연결됨':'로컬 원칙 모드'}</span>`;
     }catch{meta.innerHTML='<span class="iu-badge">IU Brain 상태 확인 대기</span>'}
   }
   async function askIU(){
     const q=document.querySelector('#iuQuestion')?.value.trim(); if(!q){alert('지금 마음을 한 문장이라도 적어줘요.');return}
-    const key=document.querySelector('#iuKey')?.value.trim()||sessionStorage.getItem('mySea.aiKey')||''; if(key)sessionStorage.setItem('mySea.aiKey',key);
-    const appPw=sessionStorage.getItem('mySea.appPassword')||'';
+    const appPw=sessionStorage.getItem('mySeaPw')||'';
     const btn=document.querySelector('#iuAsk'), status=document.querySelector('#iuStatus');
     btn.disabled=true; btn.textContent='관련 기억을 찾는 중…'; status.textContent='IU Brain에서 지금 고민과 가까운 공개발언을 찾고, 서로 다른 시기의 관점을 겹쳐 보고 있어요.';
-    aiHistory.push({role:'user',text:q}); renderChat();
+    aiHistory.push({role:'user',text:q}); saveHistory(); renderChat();
     try{
-      const headers={'Content-Type':'application/json','X-App-Password':appPw}; if(key)headers['X-AI-Key']=key;
-      const r=await fetch('/api/iu-advice',{method:'POST',headers,body:JSON.stringify({message:q,context:context(),model:document.querySelector('#iuModel').value})});
+      const headers={'Content-Type':'application/json','X-App-Password':appPw};
+      const r=await fetch('/api/iu-advice',{method:'POST',headers,body:JSON.stringify({message:q,context:context(),model:document.querySelector('#iuModel').value,mode:document.querySelector('#iuMode').value})});
       const d=await r.json(); if(!r.ok)throw new Error(d.detail||('HTTP '+r.status));
-      aiHistory.push({role:'ai',text:d.text||'답변을 불러오지 못했어요.',evidence:d.evidence||[],evidenceUsed:d.evidence_used,brainTotal:d.brain_total});
-      document.querySelector('#iuQuestion').value=''; status.textContent=`답변 완료 · 관련 근거 ${d.evidence_used||0}개 / 전체 Brain ${d.brain_total||0}개 · ${d.model||''}`;
-    }catch(e){const m='AI 호출에 실패했어요. '+e.message; aiHistory.push({role:'ai',text:m}); status.textContent=m}
-    finally{btn.disabled=false;btn.textContent='IU Brain으로 바라보기';renderChat()}
+      aiHistory.push({role:'ai',text:d.text||'답변을 불러오지 못했어요.',evidence:d.evidence||[],evidenceUsed:d.evidence_used,brainTotal:d.brain_total,principles:d.principles||[],principlesUsed:d.principles_used||0});
+      saveHistory(); document.querySelector('#iuQuestion').value=''; status.textContent=`답변 완료 · 공개 근거 ${d.evidence_used||0}개 · 적용 원칙 ${d.principles_used||0}개 · ${d.model||''}`;
+    }catch(e){const m='원칙 코치를 불러오지 못했어. '+e.message; aiHistory.push({role:'ai',text:m});saveHistory();status.textContent=m}
+    finally{btn.disabled=false;btn.textContent='원칙 코치로 바라보기';renderChat()}
   }
 
   function addAIPage(){
     if(document.querySelector('#ai'))return;
     const app=document.querySelector('.app'); const nav=document.querySelector('.nav'); if(!app||!nav)return;
     const page=document.createElement('section'); page.className='page'; page.id='ai';
-    page.innerHTML=`<div class="grid"><div class="card"><h3>아이유의 말</h3><p class="small">아이유 본인의 답변을 재현하는 기능이 아니라, 실제 공개 인터뷰를 연도별로 검증해 만든 <b>IU Brain</b>에서 관련 사고자료를 검색해 적용하는 AI예요.</p>
-      <div class="iu-note"><b>IU Brain 방식</b><br>고민에서 핵심 주제를 찾기 → 관련 공개발언 검색 → 10대·20대·30대의 공통점과 변화를 비교 → 최근 나의 바다 기록과 연결 → 지금 적용 가능한 관점 만들기.</div><div class="iu-brain-meta" id="iuBrainMeta"><span class="iu-badge">Brain 불러오는 중…</span></div>
-      <div class="field" id="iuKeyWrap"><label>OpenAI API Key · 서버 키가 없을 때만</label><input id="iuKey" type="password" placeholder="sk-... · DB에는 저장하지 않고 브라우저 세션에서만 사용"></div>
-      <div class="iu-ai-row"><div class="field"><label>조언 모델</label><select id="iuModel"><option value="gpt-5.6-luna" selected>GPT-5.6 Luna · 저비용 기본</option><option value="gpt-5.6-terra">GPT-5.6 Terra · 더 깊게</option><option value="gpt-5.6-sol">GPT-5.6 Sol · 가장 깊게</option></select></div><div class="field" id="iuForgetWrap"><label>&nbsp;</label><button class="secondary" style="width:100%" id="iuForget">브라우저 API 키 지우기</button></div></div>
+    page.innerHTML=`<div class="grid"><div class="card"><h3>나의 바다 원칙 코치</h3><p class="small">아이유 본인을 재현하거나 사적 마음을 진단하는 기능이 아니에요. 검증한 공개자료의 대처 원칙과 승재의 반복 장면 원칙 DB를 현재 사실에 맞춰 적용합니다.</p>
+      <div class="iu-note"><b>판독 순서</b><br>현재 사실 → 마음이 붙인 해석 → 행동의 단기 효과와 장기 비용 → 상대 책임과 내 통제 범위 → 오늘 가능한 한 걸음.</div><div class="iu-brain-meta" id="iuBrainMeta"><span class="iu-badge">자료 불러오는 중…</span></div>
+      <div class="iu-ai-row"><div class="field"><label>답변 방식</label><select id="iuMode"><option value="counseling" selected>상담형</option><option value="diary">일기 분석형</option><option value="short">짧게</option><option value="casual">일상 대화형</option></select></div><div class="field"><label>조언 모델</label><select id="iuModel"><option value="gpt-5.6-luna" selected>GPT-5.6 Luna · 저비용 기본</option><option value="gpt-5.6-terra">GPT-5.6 Terra · 더 깊게</option><option value="gpt-5.6-sol">GPT-5.6 Sol · 가장 깊게</option></select></div></div>
       <label class="iu-check"><input id="iuUseContext" type="checkbox" checked> 최근 마음 기록 5개와 현재 경계 선언도 함께 참고하기</label>
       <div class="field"><label>지금 무슨 일이 있었어?</label><textarea id="iuQuestion" placeholder="예: 경계를 세웠더니 그 사람이 떠났어. 머리로는 이해하는데 자꾸 악마화하게 돼. 지금 이 마음을 어떻게 보면 좋을까?"></textarea></div>
-      <div class="chips"><button class="chip" data-iu-preset="사람 때문에 상처받았는데 사람을 미워하는 사람으로 변하고 싶지는 않아. 이 마음을 어떻게 받아들이면 좋을까?">사람 때문에 힘들 때</button><button class="chip" data-iu-preset="내가 경계를 세웠더니 상대가 떠났어. 내가 너무한 건지 자꾸 흔들려.">경계 후 떠났을 때</button><button class="chip" data-iu-preset="지금 내가 상대를 완전히 나쁜 사람으로 악마화하고 있어. 이 감정을 억누르지 않으면서 한 발 떨어져 보고 싶어.">악마화 알아차림</button></div>
-      <button class="primary" id="iuAsk" style="margin-top:14px">IU Brain으로 바라보기</button><div class="iu-status" id="iuStatus"></div></div>
+      <div class="chips"><button class="chip" data-iu-preset="답장이 없어서 나를 피하는 것 같고 불안해.">답장 불안</button><button class="chip" data-iu-preset="내가 경계를 세웠더니 상대가 떠났어. 내가 너무한 건지 자꾸 흔들려.">경계 후 죄책감</button><button class="chip" data-iu-preset="상대가 잘 지내는 모습을 보고 또 나쁜 사람이라고 생각하고 있어.">악마화 알아차림</button><button class="chip" data-iu-preset="빚과 카드 문제 때문에 미래가 끝난 것처럼 느껴져. 지금 뭘 먼저 해야 할까?">돈·빚 불안</button></div>
+      <button class="primary" id="iuAsk" style="margin-top:14px">원칙 코치로 바라보기</button><div class="iu-status" id="iuStatus"></div></div>
       <div class="card"><h3>지금의 나에게 건네는 말</h3><p class="small">답변 아래의 <b>근거 보기</b>를 열면 이번 조언에 실제로 연결된 연도·매체·공개발언을 확인할 수 있어요.</p><div id="iuChat"></div></div></div>`;
     app.insertBefore(page,nav);
     const b=document.createElement('button'); b.dataset.p='ai'; b.innerHTML='✦<br>아이유'; nav.insertBefore(b,nav.lastElementChild);
     b.addEventListener('click',()=>{document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));page.classList.add('active');document.querySelectorAll('.nav button').forEach(x=>x.classList.remove('active'));b.classList.add('active');window.scrollTo({top:0,behavior:'smooth'})});
-    document.querySelector('#iuKey').value=sessionStorage.getItem('mySea.aiKey')||'';
     document.querySelector('#iuAsk').onclick=askIU;
-    document.querySelector('#iuForget').onclick=()=>{sessionStorage.removeItem('mySea.aiKey');document.querySelector('#iuKey').value='';alert('브라우저 API 키를 지웠어요.')};
     document.querySelectorAll('[data-iu-preset]').forEach(x=>x.onclick=()=>{document.querySelector('#iuQuestion').value=x.dataset.iuPreset;document.querySelector('#iuQuestion').focus()});
     renderChat(); loadBrainStatus();
   }

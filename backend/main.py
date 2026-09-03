@@ -18,8 +18,11 @@ from backend.database import Base, engine, get_db
 BASE_DIR = Path(__file__).resolve().parent.parent
 FRONTEND_DIR = BASE_DIR / "frontend"
 IU_BRAIN_DIR = BASE_DIR / "iu_brain"
+PRINCIPLES_PATH = BASE_DIR / "knowledge" / "iu_principles_kb.v1.json"
+PRINCIPLES_PROMPT_PATH = BASE_DIR / "prompts" / "my_sea_ai_system_prompt.v1.md"
 APP_PASSWORD = os.getenv("APP_PASSWORD", "").strip()
 SERVER_OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "").strip()
+DEFAULT_OPENAI_MODEL = os.getenv("OPENAI_MODEL", "gpt-5.6-luna").strip()
 
 app = FastAPI(title="나의 바다", version="4.1-iu-brain-love")
 
@@ -38,7 +41,8 @@ class StateBody(BaseModel):
 class IUAdviceBody(BaseModel):
     message: str
     context: dict | None = None
-    model: str = "gpt-5.6-luna"
+    model: str = DEFAULT_OPENAI_MODEL
+    mode: str = "counseling"
 
 
 @app.on_event("startup")
@@ -76,6 +80,21 @@ def load_iu_brain() -> list[dict]:
 
 
 IU_BRAIN = load_iu_brain()
+
+
+def load_principles_kb() -> dict:
+    try:
+        return json.loads(PRINCIPLES_PATH.read_text(encoding="utf-8"))
+    except Exception:
+        return {"situations": [], "core_principles": []}
+
+
+PRINCIPLES_KB = load_principles_kb()
+PRINCIPLE_SITUATIONS = PRINCIPLES_KB.get("situations", [])
+try:
+    PRINCIPLES_PROMPT = PRINCIPLES_PROMPT_PATH.read_text(encoding="utf-8")
+except Exception:
+    PRINCIPLES_PROMPT = ""
 
 TOPIC_ALIASES = {
     # 사람 · 관계 · 경계
@@ -215,6 +234,82 @@ def normalized_terms(text: str) -> set[str]:
     return {x.lower() for x in re.findall(r"[가-힣A-Za-z0-9_-]{2,}", text or "")}
 
 
+PRINCIPLE_ALIASES = {
+    "답장": ["무응답", "읽씹", "연락 지연"],
+    "연락": ["답장", "무응답", "반복 연락"],
+    "단톡": ["단체 채팅방", "무반응", "소외감"],
+    "성진": ["조성진", "악마화", "상대가 잘 지내는 모습"],
+    "동환": ["가까운 사람", "답장 지연", "확인 욕구"],
+    "게임": ["상대가 잘 지내는 모습", "악마화"],
+    "경계": ["거절", "죄책감", "관계 상실"],
+    "회사": ["직장", "실수", "전산 담당자"],
+    "졸려": ["수면 부족", "집중 안 됨", "몸"],
+    "잠": ["수면 부족", "불면", "몸"],
+    "돈": ["카드 한도", "부채", "대출", "지출"],
+    "빚": ["부채", "대출", "개인회생"],
+    "카드": ["카드 한도", "금융 통보", "지출"],
+    "개발자": ["직무 전환", "연봉", "나이 비교"],
+    "연봉": ["직무 전환", "4000만원", "목표"],
+    "무기력": ["아무것도 하기 싫음", "게으름", "에너지"],
+    "완벽": ["완벽한 준비", "시작 못함", "계획"],
+}
+
+
+def search_principle_situations(query: str, limit: int = 3) -> list[dict]:
+    raw = re.sub(r"\s+", " ", (query or "").lower()).strip()
+    additions = []
+    for key, values in PRINCIPLE_ALIASES.items():
+        if key in raw:
+            additions.extend(values)
+    expanded = " ".join([raw, *additions])
+    raw_terms = normalized_terms(raw)
+    query_terms = normalized_terms(expanded)
+    if not query_terms:
+        return []
+
+    ranked = []
+    for item in PRINCIPLE_SITUATIONS:
+        hay = str(item.get("retrieval_text", "")).lower()
+        item_terms = normalized_terms(hay)
+        overlap = query_terms & item_terms
+        raw_overlap = raw_terms & item_terms
+        raw_recall = len(raw_overlap) / max(1, len(raw_terms))
+        expanded_recall = len(overlap) / max(1, len(query_terms))
+        precision = len(overlap) / max(1, min(len(item_terms), 30))
+        scenario = str(item.get("scenario", "")).lower()
+        phrase_bonus = 0.45 if scenario and (scenario in expanded or expanded in scenario) else 0.0
+        phrase_bonus += sum(0.035 for term in query_terms if len(term) >= 3 and term in scenario)
+        score = min(1.0, raw_recall * 0.55 + expanded_recall * 0.25 + precision * 0.20 + phrase_bonus)
+        if score >= 0.055:
+            ranked.append((score, item))
+
+    ranked.sort(key=lambda pair: pair[0], reverse=True)
+    return [
+        {
+            "id": item.get("id"),
+            "category": item.get("category"),
+            "scenario": item.get("scenario"),
+            "first_response": item.get("first_response"),
+            "reality_check_and_action": item.get("reality_check_and_action"),
+            "evidence_refs": item.get("evidence_refs", []),
+            "score": round(score, 3),
+        }
+        for score, item in ranked[: max(1, min(limit, 3))]
+    ]
+
+
+def local_principle_answer(matches: list[dict]) -> str:
+    if not matches:
+        return (
+            "승재야, 지금 마음이 꽤 복잡한 것 같아. 현재 장면에서 실제로 일어난 일과 "
+            "마음이 예상한 결론을 먼저 나눠보자. 지금 확인된 사실 하나만 말해줄래?"
+        )
+    item = matches[0]
+    refs = ", ".join(str(x) for x in item.get("evidence_refs", []))
+    suffix = f"\n\n연결된 원칙: {item.get('id')} · 근거 카드 {refs}" if refs else ""
+    return f"{item.get('first_response', '')}\n\n{item.get('reality_check_and_action', '')}{suffix}".strip()
+
+
 def retrieve_iu_evidence(message: str, context: dict | None, limit: int = 14) -> list[dict]:
     context_text = json.dumps(context or {}, ensure_ascii=False)
     query = f"{message}\n{context_text}".lower()
@@ -338,6 +433,9 @@ IU_SYSTEM = """너는 'IU Brain'이라는 연구 기반 조언 엔진이다.
 
 따뜻하지만 현실적이고, 지나친 위로나 단정은 피한다. 답변은 900자 안팎을 우선한다."""
 
+if PRINCIPLES_PROMPT:
+    IU_SYSTEM += "\n\n---\n\n" + PRINCIPLES_PROMPT
+
 
 @app.get("/health")
 def health():
@@ -357,6 +455,7 @@ def iu_brain_status():
         "observations": len(IU_BRAIN),
         "years": years,
         "brain_files": files,
+        "principles": len(PRINCIPLE_SITUATIONS),
         "server_key_configured": bool(SERVER_OPENAI_API_KEY),
     }
 
@@ -397,17 +496,38 @@ def put_state(body: StateBody, db: Session = Depends(get_db)):
 @app.post("/api/iu-advice", dependencies=[Depends(verify_password)])
 def iu_advice(body: IUAdviceBody, x_ai_key: str | None = Header(default=None)):
     key = SERVER_OPENAI_API_KEY or (x_ai_key or "").strip()
-    if not key:
-        raise HTTPException(
-            status_code=400,
-            detail="OPENAI_API_KEY is not configured on the server; a temporary browser API key is required",
-        )
-
     msg = (body.message or "").strip()
     if not msg:
         raise HTTPException(status_code=400, detail="Message is required")
 
     evidence = retrieve_iu_evidence(msg, body.context, limit=14)
+    principle_matches = search_principle_situations(
+        msg + "\n" + json.dumps(body.context or {}, ensure_ascii=False), limit=3
+    )
+    public_principles = [
+        {
+            "id": item.get("id"),
+            "category": item.get("category"),
+            "scenario": item.get("scenario"),
+            "evidence_refs": item.get("evidence_refs", []),
+            "score": item.get("score"),
+        }
+        for item in principle_matches
+    ]
+
+    if not key:
+        return {
+            "text": local_principle_answer(principle_matches),
+            "model": "local-principles",
+            "mode": "local_principles",
+            "brain_total": len(IU_BRAIN),
+            "evidence_used": 0,
+            "evidence": [],
+            "principles_total": len(PRINCIPLE_SITUATIONS),
+            "principles_used": len(principle_matches),
+            "principles": public_principles,
+        }
+
     evidence_lines = []
     for i, e in enumerate(evidence, 1):
         evidence_lines.append(
@@ -425,6 +545,10 @@ def iu_advice(body: IUAdviceBody, x_ai_key: str | None = Header(default=None)):
 
     user_input = (
         f"사용자의 현재 고민:\n{msg}{context_text}\n\n"
+        f"응답 모드: {body.mode}\n\n"
+        "PRINCIPLE MATCHES — 승재의 반복 장면용 원칙 DB:\n"
+        + json.dumps(principle_matches, ensure_ascii=False)
+        + "\n\n"
         "EVIDENCE PACK — 이번 고민과 관련성이 높은 검증 관찰치:\n"
         + "\n\n".join(evidence_lines)
         + "\n\n이 자료를 단순 나열하지 말고, 시기별 공통점·변화·긴장을 비교해 사용자의 상황에 적용해라."
@@ -441,6 +565,7 @@ def iu_advice(body: IUAdviceBody, x_ai_key: str | None = Header(default=None)):
         "input": user_input,
         "reasoning": {"effort": "low"},
         "max_output_tokens": 900,
+        "store": False,
     }
 
     req = urllib.request.Request(
@@ -495,12 +620,15 @@ def iu_advice(body: IUAdviceBody, x_ai_key: str | None = Header(default=None)):
         "brain_total": len(IU_BRAIN),
         "evidence_used": len(evidence),
         "evidence": public_evidence,
+        "principles_total": len(PRINCIPLE_SITUATIONS),
+        "principles_used": len(principle_matches),
+        "principles": public_principles,
     }
 
 
 def index_file():
     html = (FRONTEND_DIR / "index.html").read_text(encoding="utf-8")
-    addon = '<script src="/ai-addon.js?v=41"></script>'
+    addon = '<script src="/ai-addon.js?v=51"></script>'
     if addon not in html:
         html = html.replace("</body>", addon + "</body>")
     return HTMLResponse(html, headers={"Cache-Control": "no-store, max-age=0"})
