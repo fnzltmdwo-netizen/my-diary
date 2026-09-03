@@ -632,7 +632,7 @@ def iu_advice(body: IUAdviceBody, x_ai_key: str | None = Header(default=None)):
 
 def index_file():
     html = (FRONTEND_DIR / "index.html").read_text(encoding="utf-8")
-    addon = '<script src="/ai-addon.js?v=70"></script>'
+    addon = '<script src="/ai-addon.js?v=71"></script>'
     if addon not in html:
         html = html.replace("</body>", addon + "</body>")
     return HTMLResponse(html, headers={"Cache-Control": "no-store, max-age=0"})

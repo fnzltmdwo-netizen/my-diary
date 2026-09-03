@@ -74,7 +74,7 @@
       const sessionKey=!!sessionStorage.getItem('mySea.aiKey');
       meta.innerHTML=`<span class="iu-badge">검증 관찰치 ${d.observations}개</span><span class="iu-badge">개인 장면 원칙 ${d.principles||0}개</span><span class="iu-badge">${(d.years||[])[0]||'?'}–${(d.years||[]).slice(-1)[0]||'?'} 시간축</span><span class="iu-badge">${d.server_key_configured?'서버 AI 연결됨':sessionKey?'세션 AI 키 준비됨':'AI 키 미연결'}</span>`;
       if(keyWrap)keyWrap.style.display=d.server_key_configured?'none':'block';
-    }catch{meta.innerHTML='<span class="iu-badge">IU Brain 상태 확인 대기</span>'}
+    }catch{if(keyWrap)keyWrap.style.display='block';meta.innerHTML='<span class="iu-badge">잠금 해제 후 AI 상태를 다시 확인해요</span>'}
   }
   async function askIU(){
     const q=document.querySelector('#iuQuestion')?.value.trim(); if(!q){alert('지금 마음을 한 문장이라도 적어줘요.');return}
@@ -100,7 +100,7 @@
     const page=document.createElement('section'); page.className='page'; page.id='ai';
     page.innerHTML=`<div class="grid"><div class="card"><h3>나의 바다 원칙 코치</h3><p class="small">아이유 본인을 재현하거나 사적 마음을 진단하는 기능이 아니에요. 검증한 공개자료의 대처 원칙과 승재의 반복 장면 원칙 DB를 현재 사실에 맞춰 적용합니다.</p>
       <div class="iu-note"><b>판독 순서</b><br>현재 사실 → 마음이 붙인 해석 → 행동의 단기 효과와 장기 비용 → 상대 책임과 내 통제 범위 → 오늘 가능한 한 걸음.</div><div class="iu-brain-meta" id="iuBrainMeta"><span class="iu-badge">자료 불러오는 중…</span></div>
-      <div class="field" id="iuKeyWrap" style="display:none"><label>OpenAI API 키 · AI 답변 사용</label><input id="iuKey" type="password" autocomplete="off" placeholder="sk-... · 현재 브라우저 세션에만 보관"><div class="chips" style="margin-top:8px"><a class="chip" href="https://platform.openai.com/api-keys" target="_blank" rel="noopener" style="text-decoration:none;color:inherit">API 키 만들기</a><button class="chip" id="iuForgetKey" type="button">입력한 키 지우기</button></div><div class="small" style="margin-top:7px">키는 일기 DB에 저장하지 않고 이 브라우저 세션에서만 사용해요. 키가 없으면 로컬 원칙 답변으로 동작합니다.</div></div>
+      <div class="field" id="iuKeyWrap"><label>OpenAI API 키 · AI 답변 사용</label><input id="iuKey" type="password" autocomplete="off" placeholder="sk-... · 현재 브라우저 세션에만 보관"><div class="chips" style="margin-top:8px"><a class="chip" href="https://platform.openai.com/api-keys" target="_blank" rel="noopener" style="text-decoration:none;color:inherit">API 키 만들기</a><button class="chip" id="iuForgetKey" type="button">입력한 키 지우기</button></div><div class="small" style="margin-top:7px">키는 일기 DB에 저장하지 않고 이 브라우저 세션에서만 사용해요. 키가 없으면 로컬 원칙 답변으로 동작합니다.</div></div>
       <div class="iu-ai-row"><div class="field"><label>답변 방식</label><select id="iuMode"><option value="counseling" selected>상담형</option><option value="diary">일기 분석형</option><option value="short">짧게</option><option value="casual">일상 대화형</option></select></div><div class="field"><label>조언 모델</label><select id="iuModel"><option value="gpt-5.6-luna" selected>GPT-5.6 Luna · 저비용 기본</option><option value="gpt-5.6-terra">GPT-5.6 Terra · 더 깊게</option><option value="gpt-5.6-sol">GPT-5.6 Sol · 가장 깊게</option></select></div></div>
       <label class="iu-check"><input id="iuUseContext" type="checkbox" checked> 최근 마음 기록 5개와 현재 경계 선언도 함께 참고하기</label>
       <div class="field"><label>지금 무슨 일이 있었어?</label><textarea id="iuQuestion" placeholder="예: 경계를 세웠더니 그 사람이 떠났어. 머리로는 이해하는데 자꾸 악마화하게 돼. 지금 이 마음을 어떻게 보면 좋을까?"></textarea></div>
@@ -129,12 +129,20 @@
     });
   }
 
+  function watchUnlock(){
+    const overlay=document.querySelector('#overlay');if(!overlay)return;
+    const refresh=()=>{if(overlay.classList.contains('hidden'))loadBrainStatus()};
+    new MutationObserver(refresh).observe(overlay,{attributes:true,attributeFilter:['class']});
+    refresh();
+  }
+
   function run(){
     injectStyle();
-    const version=document.querySelector('.top h1 .small');if(version)version.textContent='v5.3';
+    const version=document.querySelector('.top h1 .small');if(version)version.textContent='v5.3.1';
     restoreWriteLayout();
     addAIPage();
     decorateNav();
+    watchUnlock();
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(run,0));else setTimeout(run,0);
 })();
