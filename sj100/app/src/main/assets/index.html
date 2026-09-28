@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#eadfce">
+<title>100일의 말 · 승재에게</title>
+<style>
+@font-face{font-family:NanumSquareNeo;src:url('https://hangeul.pstatic.net/hangeul_static/webfont/NanumSquareNeo/NanumSquareNeoTTF-bRg.woff2') format('woff2');font-weight:400;font-display:swap}
+@font-face{font-family:NanumSquareNeo;src:url('https://hangeul.pstatic.net/hangeul_static/webfont/NanumSquareNeo/NanumSquareNeoTTF-dEb.woff2') format('woff2');font-weight:700;font-display:swap}
+:root{--desk:#eadfce;--paper:#fffaf0;--paper2:#f8f0df;--ink:#302a25;--muted:#76695d;--peach:#e8907c;--sage:#8fa887;--blue:#8aa6b8;--line:#d7c7b3;--shadow:0 16px 45px rgba(75,54,35,.13)}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;min-height:100%;background:var(--desk);color:var(--ink);font-family:NanumSquareNeo,'Noto Sans KR',sans-serif}
+body{background-image:linear-gradient(90deg,rgba(80,60,40,.025) 1px,transparent 1px),linear-gradient(rgba(80,60,40,.018) 1px,transparent 1px);background-size:28px 28px}
+.app{width:min(820px,100%);margin:auto;padding:23px 16px 112px}
+.top{display:flex;justify-content:space-between;align-items:center;margin:2px 3px 18px}.eyebrow{font-size:11px;letter-spacing:.14em;color:var(--muted);font-weight:700}.top h1{font-size:31px;margin:3px 0 0;letter-spacing:-.06em}.top h1:after{content:'';display:block;width:61px;height:7px;margin-top:-3px;background:rgba(232,144,124,.38);border-radius:50%;transform:rotate(-2deg)}
+.hero,.letter,.practice,.note,.tool{border:1px solid var(--line);box-shadow:var(--shadow);position:relative}.hero{padding:25px 23px 20px;background:var(--paper2);border-radius:8px 8px 19px 8px;transform:rotate(-.15deg);overflow:hidden}.hero:after{content:'✦  ✎';position:absolute;right:17px;bottom:16px;color:rgba(48,42,37,.18);font-size:23px;letter-spacing:7px;transform:rotate(-8deg)}.badge{display:inline-block;padding:7px 10px;border:1.5px solid var(--ink);border-radius:4px;font-size:11px;font-weight:700;letter-spacing:.09em;transform:rotate(-1.8deg)}h2{font-size:28px;line-height:1.32;letter-spacing:-.055em;margin:15px 0 10px;max-width:91%}.lead{color:var(--muted);line-height:1.75;font-size:15px;margin:0;max-width:94%}.prog{display:flex;gap:10px;align-items:center;margin-top:20px}.track{height:7px;flex:1;background:rgba(48,42,37,.09);border-radius:99px;overflow:hidden}.bar{height:100%;background:linear-gradient(90deg,var(--peach),#d77867);border-radius:99px}.prog small{font-weight:700;color:var(--muted)}
+.letter{margin-top:17px;padding:30px 23px 25px;background:var(--paper);border-radius:6px 16px 8px 14px;transform:rotate(.1deg)}.tape{position:absolute;top:-9px;width:78px;height:21px;background:rgba(235,209,165,.62);clip-path:polygon(3% 8%,96% 0,100% 90%,4% 100%,0 19%)}.tl{left:24px;transform:rotate(-4deg)}.tr{right:25px;transform:rotate(4deg)}.kicker{font-size:11px;color:var(--muted);font-weight:700;letter-spacing:.08em}.message{font-size:17px;line-height:1.95;word-break:keep-all}.message p{margin:16px 0}.quote{padding:17px 18px;margin-top:22px;background:#f6e9df;border-radius:7px 13px 9px 8px;font-weight:700;line-height:1.72;transform:rotate(-.3deg)}
+.practice{margin-top:17px;padding:23px;background:#f5f0dc;border-radius:14px 6px 15px 8px}.practice h3{margin:0 0 10px;font-size:15px}.practice p{margin:0 0 16px;color:var(--muted);line-height:1.8}.primary{width:100%;padding:14px;border:1.5px solid var(--ink);border-radius:8px;background:var(--ink);color:var(--paper);font-weight:700}.primary.done{background:var(--sage);border-color:var(--sage)}
+.tools{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:17px}.tool{padding:17px;background:var(--paper);border-radius:15px 7px 13px 9px;text-align:left;min-height:104px}.tool:nth-child(2){transform:rotate(.35deg)}.tool b{display:block;margin:8px 0 4px}.tool small{color:var(--muted);line-height:1.5}.note{margin-top:17px;padding:22px;background:var(--paper);border-radius:8px 13px 7px 14px}.note b{font-size:14px}.note textarea{width:100%;min-height:92px;margin-top:12px;border:0;outline:0;resize:vertical;color:var(--ink);background:repeating-linear-gradient(to bottom,transparent 0,transparent 28px,rgba(138,166,184,.24) 29px,transparent 30px);line-height:30px;font:inherit}.saveNote{border:0;background:transparent;color:#b65f52;font-weight:700;padding:8px 0 0}
+.nav{position:fixed;left:50%;bottom:max(12px,env(safe-area-inset-bottom));transform:translateX(-50%);width:min(785px,calc(100% - 24px));display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px;padding:8px;background:rgba(255,250,240,.92);border:1px solid rgba(176,152,126,.55);border-radius:16px;box-shadow:0 12px 32px rgba(55,43,32,.16)}.nav button{border:0;background:transparent;padding:12px 7px;font:inherit;font-weight:700;color:var(--ink)}.nav .today{background:rgba(232,144,124,.17);border-radius:9px}
+dialog{width:min(550px,calc(100% - 28px));border:1px solid var(--line);border-radius:8px 17px 9px 14px;background:var(--paper);color:var(--ink);padding:27px 24px;box-shadow:0 28px 90px rgba(0,0,0,.25)}dialog::backdrop{background:rgba(33,28,24,.48)}dialog h3{font-size:23px;margin:8px 0 16px}dialog ol{padding-left:21px}dialog li{padding:8px 0;line-height:1.55}dialog span{display:block;color:var(--muted);font-size:13px;margin-top:2px}.close{position:absolute;right:13px;top:10px;border:0;background:var(--paper2);width:34px;height:34px;border-radius:50%;font-size:20px}
+@media(max-width:430px){.app{padding-left:14px;padding-right:14px}.hero{padding:22px 19px}.hero h2{font-size:25px}.letter,.practice,.note{padding-left:20px;padding-right:20px}.message{font-size:16.5px}}
+</style>
+</head>
+<body>
+<main class="app">
+<header class="top"><div><div class="eyebrow">승재에게 보내는</div><h1>100일의 말</h1></div><div style="font-size:24px;transform:rotate(8deg)">☁︎</div></header>
+<section class="hero"><span id="badge" class="badge">DAY 1</span><h2 id="title"></h2><p id="lead" class="lead"></p><div class="prog"><div class="track"><div id="bar" class="bar"></div></div><small id="progress"></small></div></section>
+<section class="letter"><i class="tape tl"></i><i class="tape tr"></i><div class="kicker">오늘 승재에게</div><div id="message" class="message"></div><div id="anchor" class="quote"></div></section>
+<section class="practice"><h3>오늘의 실전 ✦</h3><p id="practice"></p><button id="done" class="primary">오늘 읽음 ✓</button></section>
+<section class="tools"><button id="ground" class="tool"><span style="font-size:24px">↩</span><b>1분 현실복귀</b><small>반추에서 빠져나오는 짧은 루틴</small></button><button id="favorite" class="tool"><span style="font-size:24px">♡</span><b>마음에 저장</b><small>다시 읽고 싶은 날 표시</small></button></section>
+<section class="note"><b>✎ 오늘 한 줄</b><textarea id="memo" placeholder="지금 내 마음을 한 줄만 남겨봐."></textarea><button id="saveNote" class="saveNote">저장하기</button></section>
+<nav class="nav"><button id="prev">← 이전</button><button class="today">오늘</button><button id="next">다음 →</button></nav>
+</main>
+<dialog id="dlg"><button id="close" class="close">×</button><div class="eyebrow">60초만</div><h3>상상에서 현실로 돌아오기</h3><ol><li><b>이름 붙이기</b><span>“아, 지금 반추 중이네.”</span></li><li><b>사실 한 줄</b><span>“지금 확인된 사실은 여기까지.”</span></li><li><b>몸으로 돌아오기</b><span>발바닥 꾹 · 어깨 힘 빼기 · 길게 내쉬기</span></li><li><b>결론 보류</b><span>“아직 몰라. 지금 해결 안 해도 돼.”</span></li><li><b>현재 행동 하나</b><span>물 한 모금 · 1분 걷기 · 업무 하나 열기</span></li></ol><div class="quote">내 관심은 다시 내 쪽으로.</div></dialog>
+<script>
+const phases=[
+{name:"내 편이 되는 연습",intro:"승재야, 첫 번째 축은 다른 사람보다 먼저 네 곁에 남는 연습이야. 잘했을 때만 네 편이 되는 건 진짜 내 편이 아니야. 실수하고 흔들리고 인정받지 못했다고 느끼는 날에도 너를 버리지 않는 태도가 필요해.",core:"지금의 목표는 완벽한 사람이 되는 게 아니라, 힘든 순간에 자기 자신을 공격하지 않고 돌보는 사람이 되는 거야. 남에게 하듯 네 마음에도 맥락과 시간을 줘."},
+{name:"반추와 현실검증",intro:"승재는 생각이 깊은 사람이지만 불안할 때는 그 깊이가 한 방향으로만 파고들 수 있어. 사실 하나에서 시작해 해석을 붙이고, 그 해석을 다시 사실처럼 믿으면 마음이 점점 좁아져.",core:"생각을 없애려고 싸우기보다 사실과 해석을 분리하고, 모르는 건 모르는 채로 두는 연습을 하자. 반추에서 돌아오는 횟수가 많아질수록 마음의 복귀력이 커져."},
+{name:"관계와 경계",intro:"관계가 중요할수록 승재는 상대의 마음을 먼저 챙기고 자기 불편함을 뒤로 미루기 쉬웠어. 그러다 보면 작은 불편함이 쌓여 큰 분노가 필요해져.",core:"건강한 관계는 참는 능력보다 제때 작은 경계를 말하는 능력으로 유지돼. 상대를 악마로 만들지 않아도 거리를 조절할 수 있고, 화해해도 경계는 남길 수 있어."},
+{name:"인정욕구와 비교",intro:"누군가가 반응을 많이 받는 장면을 보면 ‘나는?’이라는 질문이 자동으로 올라올 수 있어. 그 순간 존재감을 증명하고 싶은 마음이 커지는 것도 자연스러워.",core:"하지만 다른 사람의 +1이 승재의 -1은 아니야. 인정받고 싶은 마음은 인정하되, 그 마음이 행동의 운전대를 잡게 두지 않는 연습이 필요해."},
+{name:"우울한 날의 돌봄",intro:"우울한 시기에는 세상이 실제보다 더 막막하고 사람은 실제보다 더 위협적으로 느껴질 수 있어. 그때 떠오르는 생각을 인생 전체의 판결문으로 쓰지 말자.",core:"회복은 다시는 무너지지 않는 게 아니라 무너졌을 때 더 빨리 돌봄으로 돌아오는 일이야. 지금의 승재는 채찍보다 회복자원이 필요한 사람일 수 있어."},
+{name:"ADHD식 실행관리",intro:"승재의 머릿속에서는 생각이 빠르고 연결도 빠른데, 실행은 시작점이 흐려지거나 다른 자극으로 튈 수 있어. 의지 부족으로 설명하면 도움이 안 돼.",core:"환경을 단순하게 만들고 행동을 작게 쪼개고, 시작 신호를 외부에 만들어두자. 점프를 막는 게 아니라 브릿지를 만드는 방식이 승재에게 더 맞아."},
+{name:"일과 성장",intro:"일을 잘해야만 가치 있는 사람이 되는 건 아니야. 업무는 능력을 연습하는 장소이지 사람값을 매기는 시험장이 아니야.",core:"실수는 기록하고 수정하면 되고, 모르는 건 묻고 배우면 돼. 한 번에 모든 걸 잘하려 하기보다 오늘의 한 가지를 끝내는 경험을 쌓자."},
+{name:"수면과 몸",intro:"마음이 흔들릴 때 몸의 상태를 빼놓으면 설명이 자꾸 왜곡돼. 졸림, 수면의 질, 긴장, 식사, 약물 효과 같은 신체 조건은 감정과 집중에 직접 영향을 줘.",core:"몸을 적처럼 다루지 말고 데이터를 주는 동료처럼 보자. 충분한 수면, 양압기 같은 치료, 진료와 약 복용은 의지와 별개의 기본 토대야."},
+{name:"소비와 충동",intro:"새 물건이나 새로운 선택은 순간적으로 기분과 자기이미지를 바꿔주는 것처럼 느껴질 수 있어. 특히 지치고 인정받고 싶은 날엔 결제 속도가 빨라질 수 있어.",core:"사고 싶은 마음은 허용하되 구매 행동은 미래의 승재와 함께 결정하자. 자기비난보다 대기시간과 예산 같은 구조가 충동을 더 잘 막아줘."},
+{name:"통합과 앞으로의 승재",intro:"100일의 마지막 구간은 더 많은 조언을 모으는 시간이 아니라, 필요한 순간에 몇 개의 문장을 실제 행동으로 꺼내 쓰는 시간이야.",core:"결국 종착지는 완벽한 승재가 아니야. 흔들리고 실수해도 자기 손을 놓지 않는 승재, 다른 사람을 사랑하면서 자기 자신도 관계 안에 같이 데려가는 승재야."}
+];
+const tips=[
+[
+["오늘은 네 편에 서는 날","힘든 순간 ‘왜 이래?’보다 ‘많이 힘들구나’를 먼저 말해줘.","가슴에 손을 얹고 “승재야, 오늘도 같이 가자”라고 한 번 말하기.","무슨 일이 있어도 나는 나를 버리지 않는다."],
+["잘해야 사랑받는다는 규칙 내려놓기","업무 실수나 말실수는 수정할 사건이지 네 가치의 점수가 아니야.","실수 하나를 떠올리고 ‘행동은 수정 가능, 내 가치는 그대로’라고 적기.","행동은 고쳐도, 사람인 나까지 깎지 않는다."],
+["나도 돌봐야 할 한 사람","남의 기분을 빠르게 읽는 능력은 장점이지만 네 상태를 빼먹으면 자기삭제가 돼.","결정 전 ‘상대에게 좋은가?’와 ‘나에게도 좋은가?’를 같이 묻기.","남을 소중히 여기는 명단에 나도 넣는다."],
+["힘든 나를 혼자 두지 않기","아픈 자신에게 일을 더 시키지 말자. 회복이 필요한 날엔 목표를 줄여도 돼.","오늘 꼭 필요한 일 1개만 남기고 나머지는 미뤄도 되는지 보기.","나는 무너질 수 있다. 그래도 그때의 나를 혼자 두고 가지 않는다."],
+["작은 불편함을 제때 챙기기","처음의 10짜리 불편함을 무시하면 나중엔 100짜리 분노가 필요해져.","작은 불편함 하나를 부드럽게 한 문장으로 표현하기.","작은 경계가 큰 폭발을 막아준다."],
+["좋은 사람과 만만한 사람은 다르다","친절하고 웃긴 사람이라고 함부로 대해도 되는 사람은 아니야.","불편했던 사람 대신 불편했던 ‘행동’을 한 문장으로 적기.","웃긴 사람일 수는 있어도 우습게 대해도 되는 사람은 아니다."],
+["사과와 자기보호를 동시에","내 몫은 깨끗하게 사과하고 상대의 선 넘음은 별개의 이야기로 다루면 돼.","사과 문장과 경계 문장을 따로 써보기.","사과는 깨끗하게, 경계는 따로."],
+["증명하지 않아도 되는 날","‘나도 이런 사람이야’를 보여주고 싶을 때 공유 욕구와 증명 욕구를 구분해보자.","SNS나 톡방에 올리기 전 ‘공유인가 증명인가?’ 묻기.","나는 증명하지 않아도 여기 있어도 되는 사람이다."],
+["내 편으로 돌아오는 기술","흔들리지 않는 사람이 아니라 흔들린 뒤 돌아오는 사람이 강한 사람이야.","흔들리는 순간 ‘지금 내가 통제할 수 있는 행동 한 가지는?’ 찾기.","흔들려도 다시 내 자리로 돌아온다."],
+["10일째, 작은 반복을 믿기","완벽히 실천하지 못했어도 다시 읽고 다시 돌아온 횟수가 이미 훈련이야.","지난 10일 중 가장 마음에 남은 문장 하나 저장하기.","변화는 반복해서 돌아오는 작은 방향에서 생긴다."]
+],
+[
+["생각은 사실이 아니다","머릿속 문장에 증거표를 붙여보자. 사실과 해석이 분리되면 숨 쉴 공간이 생겨.","걱정 하나를 ‘사실 / 해석 / 아직 모름’ 세 칸으로 적기.","빈칸은 빈칸으로 남겨도 된다."],
+["상상의 나래에서 돌아오기","반추가 시작되면 더 생각해서 해결하려 하지 말고 상태에 이름부터 붙여.","‘아, 지금 반추 중이네’라고 말하고 10번 천천히 걷기.","또 갔네. 다시 오자."],
+["아직 모른다는 말을 견디기","틀린 확신은 잠깐 편하고 오래 힘들어. 오늘은 모름을 결론으로 허락해.","애매한 일 하나를 오늘 하루 결론 내리지 않기.","응, 아직 몰라. 그래도 괜찮아."],
+["읽씹은 데이터 하나","답이 없다는 사실과 나를 싫어한다는 해석은 다르다. 반복은 보되 한 번으로 전체를 판결하지 말자.","추가 연락 전 30분 기다리고 다른 행동 하나 하기.","서운함은 느껴도 되지만 의미 확정은 늦춘다."],
+["다른 사람 +1은 내 -1이 아니다","친구가 다른 사람에게 반응해도 내 자리가 자동으로 줄어드는 건 아니야.","‘저 관계의 정보’와 ‘내 관계의 정보’를 따로 적기.","다른 사람 +1 ≠ 나 -1."],
+["증거 없는 재판 멈추기","‘날 만만하게 보나?’에 답이 없으면 추리보다 작은 경계를 보여주고 반응을 보자.","추측 하나를 ‘다음에도 반복되는지 본다’로 바꾸기.","사람을 판결하려 애쓰지 말고 행동을 관찰한다."],
+["확인하지 않아도 버틸 수 있다","확인은 잠깐 안심시키지만 반복되면 ‘확인해야 안전하다’를 학습시켜.","확인 욕구가 오면 10분 타이머를 켜고 미루기.","확신 없어도 나를 지킬 수 있다."],
+["감정이 큰 날엔 결론 미루기","감정은 진짜지만 감정이 큰 순간의 결론까지 정확하다는 보장은 없어.","감정 7 이상이면 사과·해명·관계판결을 다음 날로 미루기.","감정은 진짜, 결론은 보류."],
+["반추 예약하기","‘생각하지 마’ 대신 ‘저녁 8시에 10분만 생각하자’고 예약해.","반추 제목만 메모하고 정한 시간까지 미루기.","지금 해결하지 않아도 사라지지 않는다."],
+["20일째, 현실로 돌아오는 사람","같은 생각이 열 번 돌아와도 열 번 현재로 돌아오면 돼.","오늘 반추에서 돌아온 횟수에 체크하기.","생각을 없애는 능력보다 생각에서 돌아오는 능력."]
+],
+[
+["관계가 이상하면 관계를 조절하기","관계가 삐걱거릴 때 나를 더 고치기보다 거리와 기대치를 조절할 수도 있어.","불편한 관계 하나의 기대치를 10% 낮추기.","나를 조절하기보다 관계를 조절할 수도 있다."],
+["상대의 화는 판결문이 아니다","화난 사람이 항상 옳은 건 아니야. 내 책임만 가져오면 돼.","갈등 뒤 ‘내 책임은 몇 %인가?’를 가라앉은 뒤 적기.","상대의 화는 확인해볼 감정 신호다."],
+["거절해도 관계는 남을 수 있다","NO 하나로 무너지는 관계라면 그것도 중요한 정보야.","사소한 부탁 하나를 정중하게 거절해보기.","거절해도 나는 나쁜 사람이 아니다."],
+["상대 마음보다 내 마음 말하기","마음읽기를 줄이고 ‘나는 이게 좋다/싫다’를 늘려보자.","오늘 선호 하나를 직접 표현하기.","상대 마음 추측은 줄이고 내 마음 표현은 늘린다."],
+["화해와 경계는 별개","다시 친해져도 예전 행동까지 허용할 필요는 없어.","지키고 싶은 경계 하나 적기.","화해 ≠ 경계 해제."],
+["좋은 면이 있어도 거리를 둘 수 있다","상대를 악마로 만들어야만 멀어질 수 있는 건 아니야.","한 사람을 ‘좋은 점/힘든 점/적당한 거리’로 나눠보기.","좋은 사람일 수 있어. 그래도 가까이 두지 않을 수 있다."],
+["내가 한 번 손 내밀었다면","관계에는 상대가 움직일 차례도 있어야 해.","이미 두 번 제안했다면 다음 제안은 상대에게 맡기기.","나는 손을 내밀었다. 이제 올지는 그 사람 몫."],
+["상호성이 매력보다 중요하다","내가 얼마나 원하는지보다 이 사람이 나를 얼마나 원하고 존중하는지도 보자.","관계 하나를 호감/상호성/존중으로 각각 10점 매기기.","서로 선택하는 관계를 본다."],
+["의도를 몰라도 경계 가능하다","악의가 있었는지 완벽히 증명하지 않아도 내가 불편했다는 사실은 말할 수 있어.","‘의도는 모르지만 나는 불편했다’ 문장 연습하기.","의도를 몰라도 내 경계는 세울 수 있다."],
+["30일째, 관계에 나도 데려오기","건강한 관계는 상대만 편한 관계가 아니라 둘 다 존재하는 관계야.","오늘 관계 속 내 욕구 하나를 말로 표현하기.","내 마음도 관계 안에 같이 데려간다."]
+],
+[
+["인정받고 싶은 마음 인정하기","인정욕구를 부끄러워하면 오히려 더 급하게 증명하게 될 수 있어.","‘응, 나 지금 인정받고 싶구나’라고 한 번 말하기.","욕구는 인정하고 행동은 선택한다."],
+["존재감 확인을 멈추는 10분","톡방을 가치측정기로 쓰면 반응이 없는 순간 기분도 같이 떨어져.","확인 욕구가 오면 10분 동안 폰을 다른 방에 두기.","톡방 반응이 내 사람값을 정하지 않는다."],
+["조성진 버튼이 눌릴 때","특정 사람이 주목받는 장면은 과거의 비교와 존중 상처를 다시 켤 수 있어.","그 자극 뒤 1시간은 추가 증명 행동 금지.","저 사람의 +1은 내 -1이 아니다."],
+["나도 이런 사람이라는 걸 보여주고 싶을 때","보여주는 행동보다 살아가는 행동을 선택해도 돼.","뭔가 올리기 전 30분 보류하고 정말 원하는지 다시 보기.","나는 발표자료가 아니다."],
+["위아래 대신 상호성","상대가 얻기 어려워서 더 가치 있어 보일 수 있어. 획득 난이도와 사람의 가치는 달라.","‘이 사람도 나를 향해 걷는가?’를 묻기.","선택받기보다 서로 선택하기."],
+["외부 충전기 끊기","칭찬과 반응은 좋지만 내 가치의 유일한 전원이 되면 자주 방전돼.","오늘 내가 나에게 인정해줄 행동 하나 적기.","누가 보지 않아도 내가 나를 본다."],
+["비교가 올라온 순간","비교는 정보를 주지만 판결을 내려야 하는 명령은 아니야.","비교 대상의 장점 1개, 내 장점 1개를 별개로 적기.","두 사람의 장점은 동시에 존재할 수 있다."],
+["반응 없는 순간의 연습","반응 없음은 ‘내 가치 없음’이 아니라 정보 부족일 수 있어.","반응 없는 게시물이나 말 하나를 삭제하지 않고 1시간 두기.","반응이 없어도 내 자리는 사라지지 않는다."],
+["존중을 증명받지 않고 지키기","사람들이 나를 높게 평가해야만 존중받는 게 아니야. 내가 내 취급 기준을 보여줄 수 있어.","작은 무례에 작은 경계 한 문장 말하기.","내 취급 설명서를 제때 보여준다."],
+["40일째, 증명보다 존재","계속 증명해야 유지되는 자존감은 너무 피곤해. 오늘은 그냥 살아가는 쪽을 택하자.","SNS·톡방 확인 시간을 정해두기.","나는 증명하지 않아도 여기 있어도 되는 사람이다."]
+],
+[
+["우울한 날의 시야","앞이 깜깜한 느낌은 현재 상태가 미래를 검게 칠하고 있을 수도 있어.","오늘 인생 결론 하나를 보류하기.","지금의 시야가 인생 전체는 아니다."],
+["사람이 무서울 때","몸이 먼저 도망 모드로 들어가면 생각으로 설득하기보다 작은 안전 경험이 필요해.","필요한 말 한 문장만 하고 자리로 돌아오기.","무서워도 나는 나를 데리고 간다."],
+["회복을 서두르지 않기","빨리 예전의 나로 돌아가려는 압박도 또 다른 짐이 될 수 있어.","오늘 목표를 평소의 70%로 줄여보기.","지금은 잘 살아내기보다 잘 돌봄 받을 때일 수 있다."],
+["많이 힘들었겠네","자기심문 대신 자기이해를 먼저 주는 날을 만들어보자.","실수 하나에 ‘왜 그랬어?’ 대신 ‘그때 많이 힘들었구나’ 말하기.","아픈 나에게 채찍보다 맥락을 준다."],
+["좋은 날 150% 쓰지 않기","괜찮아진 날 모든 걸 만회하려 하면 다시 바닥날 수 있어.","좋은 날에도 일정 하나는 비워두기.","회복은 과속하지 않는다."],
+["도움받는 능력도 힘","혼자 버티는 것만 강함은 아니야. 필요한 진료와 도움을 쓰는 것도 자기보호야.","다음 진료에 말할 증상 한 줄 적기.","도움 요청은 포기가 아니라 전략이다."],
+["우울과 자기평가 분리하기","우울할 때의 자기평가는 실제보다 가혹해질 수 있어.","오늘 떠오른 자기비난 하나에 ‘상태 영향 가능’ 표시하기.","지금의 감정이 나의 전부는 아니다."],
+["최소모드도 모드다","업무와 생활을 최소한으로 하는 시기는 실패가 아니라 보존 전략일 수 있어.","오늘 필수 3개만 정하기.","살아내는 날에는 최소한도 충분하다."],
+["연결은 부담 없게","고립보다 부담 없는 연결이 회복에 도움이 될 때가 있어.","편한 사람에게 짧은 안부 한 번 보내기.","요구 없는 따뜻한 연결도 자원이다."],
+["50일째, 반쯤 왔다","절반까지 왔다는 건 완벽했다는 뜻이 아니라 계속 돌아왔다는 뜻이야.","가장 도움이 된 훈련 하나를 이번 주에 반복하기.","회복은 돌아오는 횟수로 자란다."]
+],
+[
+["시작 버튼을 밖에 만들기","의지로 시작하려 하지 말고 환경이 시작시키게 하자.","5분 타이머 켜고 첫 화면만 열기.","시작은 작을수록 쉽다."],
+["점프는 막지 말고 브릿지 달기","머릿속 연결이 빨라도 상대에게 중간 맥락 한 줄을 전달하면 오해가 줄어.","말하기 전 ‘무슨 얘기냐면’ 한 문장 붙이기.","점프는 두고 브릿지만 단다."],
+["한 번에 하나","여러 창이 열리면 시작점이 사라져.","지금 할 일 하나만 화면에 남기기.","한 번에 한 행동이면 충분하다."],
+["충동과 행동 사이 10초","생각이 빠른 만큼 행동도 빨라질 수 있어. 작은 지연이 큰 차이를 만든다.","보내기/결제/말하기 전 10초 세기.","빠른 뇌에 작은 브레이크를 단다."],
+["외부 기억장치 쓰기","기억하려고 머리에 들고 있지 말고 적어두자.","해야 할 일 3개를 메모 위젯에 적기.","기억보다 시스템을 믿는다."],
+["완료 기준 작게","‘제대로’ 하려다 시작을 못 하는 것보다 작은 완료가 낫다.","오늘 업무 하나의 완료 기준을 70%로 정하기.","완벽보다 완료."],
+["자극 전환 줄이기","알림과 새 탭은 뇌를 계속 갈아타게 해.","25분 동안 알림 끄고 한 일만 하기.","집중은 의지보다 환경의 도움을 받는다."],
+["말실수 후 복구하기","실수하지 않는 것보다 바로 수정하는 능력이 중요해.","잘못 말했으면 ‘아, 내가 설명을 빼먹었네’라고 즉시 보완하기.","실수보다 복구가 중요하다."],
+["컨디션을 변수로 넣기","졸리고 지친 날 실행력이 떨어지는 건 도덕 문제가 아니야.","오늘 에너지를 10점 만점으로 적고 업무량 조정하기.","상태는 핑계가 아니라 변수다."],
+["60일째, 내 뇌와 협력하기","ADHD를 이겨야 할 적으로 두기보다 작동방식을 알고 환경을 맞추자.","도움 됐던 실행 도구 하나를 고정 루틴으로 만들기.","나를 억지로 바꾸기보다 나에게 맞는 구조를 만든다."]
+],
+[
+["업무는 사람값 시험이 아니다","일을 못한 순간이 있어도 사람이 낮아지는 건 아니야.","실수 하나를 ‘원인/수정/다음 확인’으로만 적기.","업무 평가는 행동의 정보다."],
+["모르는 건 질문하면 된다","질문이 무능의 증거라는 생각이 일을 더 어렵게 만들 수 있어.","모르는 것 하나를 짧게 질문하기.","묻는 것도 일의 일부다."],
+["한 번의 실수에서 전체로 가지 않기","‘오늘 실수함’과 ‘나는 일을 못함’은 다른 문장이야.","오늘 사건을 전체인격 문장 없이 기록하기.","한 장면이 전체가 아니다."],
+["사람 공포가 올라와도 한 문장","사회성을 증명하려 하지 말고 업무상 필요한 말만 해도 돼.","‘네, 확인해볼게요’ 같은 기본문장 하나 사용하기.","무서워도 필요한 만큼만 한다."],
+["성장을 비교하지 않기","다른 사람의 속도는 참고자료이지 내 실패 증거가 아니야.","어제의 나보다 나아진 점 1개 찾기.","비교 기준을 나의 이전 버전으로 돌린다."],
+["배움은 깊이를 조절한다","모든 걸 전문가 수준으로 공부하려 하면 지친다.","오늘 배울 내용을 깊게/중간/가볍게 중 하나로 분류하기.","필요한 깊이만큼 배운다."],
+["포트폴리오는 증명보다 기록","내가 대단하다는 걸 보여주는 자료보다 실제로 만든 걸 설명하는 자료가 강해.","프로젝트 하나에서 내가 해결한 문제 1개 적기.","성과보다 문제해결을 기록한다."],
+["잘하는 날도 쉬기","성과가 잘 나오는 날 쉬는 시간을 빼면 다음 날 비용이 생겨.","퇴근 뒤 30분은 성과 없는 시간으로 두기.","휴식도 생산성의 일부다."],
+["직장에서 관계는 전부가 아니다","모든 사람이 나를 좋아해야 일할 수 있는 건 아니야.","오늘 ‘업무적으로 충분한 관계’ 하나를 그대로 두기.","좋아함보다 협업이 먼저일 때도 있다."],
+["70일째, 직업보다 나","회사가 바뀌어도 직무가 바뀌어도 승재는 남아.","일 밖에서 나를 설명하는 단어 5개 적기.","직업은 내 삶의 일부이지 전부가 아니다."]
+],
+[
+["수면시간과 수면의 질","오래 잤어도 수면무호흡으로 자주 깨면 회복이 덜 될 수 있어.","오늘 수면시간과 아침 개운함을 함께 기록하기.","오래 잔 것과 잘 잔 것은 다를 수 있다."],
+["양압기는 벌이 아니다","귀찮아도 치료 도구는 내 몸을 지키는 장치야.","오늘 밤 양압기를 사용할 준비를 미리 해두기.","몸을 위한 장치는 자기돌봄이다."],
+["콘서타가 가리는 졸림 보기","각성 효과가 기본 졸림을 덮고 있을 수 있으니 원인을 별도로 확인해야 해.","복용 여부와 주간졸림을 기록하기.","증상을 가리는 것과 원인을 치료하는 건 다르다."],
+["졸린 날 운전하지 않기","눈이 감기고 실제로 잠드는 졸림은 의지로 버틸 문제가 아니야.","심한 졸림이면 위험 작업을 피하기.","안전이 먼저다."],
+["약은 혼자 조절하지 않기","효과와 부작용을 기록해 의사와 조정하는 게 가장 안전해.","다음 진료에 묻고 싶은 약 질문 1개 적기.","약 조정은 기록과 진료로 한다."],
+["몸이 먼저 무서울 때","공포가 생각보다 먼저 올라오면 몸에서 출발해야 해.","발바닥 꾹, 어깨 힘 빼기, 3초 들숨 6초 날숨 5회.","몸이 겁먹은 것과 실제 위험은 다르다."],
+["낮잠을 죄책감 없이 관찰하기","잠드는 정도와 시간을 기록하면 원인 판단에 도움이 돼.","낮잠 시작·끝 시간을 적기.","졸림은 도덕이 아니라 데이터다."],
+["회복을 측정하는 다른 지표","기분이 남아 있어도 기능이 조금 돌아오면 변화가 있는 거야.","오늘 해낸 기능 3개 적기.","기분이 전부는 아니다."],
+["몸과 싸우지 않기","피로와 긴장을 억누르기만 하면 몸이 적처럼 느껴져.","몸이 보내는 신호 하나를 판단 없이 적기.","몸과 협력한다."],
+["80일째, 기반을 챙기는 사람","마음을 안정시키는 가장 아래층에는 수면·호흡·식사·휴식이 있어.","오늘 기본 돌봄 2개를 완료하기.","기초가 마음을 받쳐준다."]
+],
+[
+["사고 싶은 마음과 사야 하는 이유","충동은 욕구를 알려주지만 결제 명령은 아니야.","10만원 이상 구매는 24시간 보류하기.","원하는 마음과 사는 행동은 분리할 수 있다."],
+["소비로 기분을 복구하지 않기","우울하거나 인정받고 싶은 날 새 물건이 나를 새롭게 만들 것처럼 느껴질 수 있어.","기분이 낮은 날 비필수 구매를 다음 날로 미루기.","기분을 바꾸기 위해 미래의 돈을 쓰지 않는다."],
+["가격보다 총비용","월 얼마만 보면 부담이 작아 보여. 총액과 현금흐름을 같이 봐야 해.","구매 전 총액/월납부/남는 돈 세 숫자 적기.","월 얼마가 아니라 총 얼마를 본다."],
+["물건보다 욕구 먼저 보기","편리함, 새로움, 인정, 심심함 중 무엇 때문에 원하는지 이름 붙여보자.","‘나는 ___ 때문에 이걸 원한다’ 적기.","물건보다 욕구를 먼저 본다."],
+["이미 가진 것의 사용률","새 도구보다 기존 도구를 잘 쓰는 것이 더 큰 만족을 줄 수도 있어.","최근 산 물건 하나를 오늘 20분 실제로 쓰기.","소유보다 사용이 만족을 만든다."],
+["작은 즐거움 허용하기","모든 즐거움을 금지하면 반동이 와. 예산 안에서 작은 보상은 괜찮아.","정한 예산 안에서 작은 즐거움 하나 고르기.","절제는 즐거움 금지가 아니라 범위 정하기."],
+["돈 문제를 회피하지 않기","숫자를 보는 게 무서울수록 한 번에 한 숫자만 보자.","이번 주 필수지출 3개 적기.","돈 문제도 한 번에 한 숫자."],
+["부채와 자기 가치 분리하기","재정 상태는 해결할 문제이지 사람값이 아니야.","재정 문제 하나를 ‘사실/다음 행동’ 두 줄로 적기.","돈의 숫자가 내 사람값을 정하지 않는다."],
+["미래의 나와 같이 결제하기","지금 즐거운 나와 다음 달 납부하는 나는 같은 사람이야.","구매 전 ‘다음 달의 내가 고마워할까?’ 묻기.","현재의 나와 미래의 나는 같은 편이다."],
+["90일째, 자기비난보다 시스템","충동 뒤 ‘왜 이래’보다 트리거와 방어장치를 보자.","내 소비 트리거 3개와 방어장치 하나씩 적기.","자기비난보다 구조를 바꾼다."]
+],
+[
+["좋은 기억을 지우지 않고 떠나기","좋았던 건 좋았던 대로 남기고 끝난 건 끝난 대로 인정할 수 있어.","끝난 관계 하나에 ‘좋았던 것/끝난 이유/지금 선택’ 적기.","좋은 기억은 가지고 가고 나는 이제 내 쪽으로 간다."],
+["떠남은 슬픔이지 가치의 증거가 아니다","누군가 멀어져도 그게 ‘나는 버려질 사람’이라는 증거는 아니야.","과거 관계에서 배운 행동 하나만 적기.","떠나는 사람은 보내되 남겨진 나는 버리지 않는다."],
+["사랑하되 나를 희생하지 않기","가까운 사람을 위해 양보할 수 있지만 늘 나만 줄어드는 사랑은 원망을 만들 수 있어.","관계 하나에서 내가 원하는 것 한 가지 말하기.","사람을 사랑하되 사랑받기 위해 나를 버리지 않는다."],
+["나의 안전한 사람이 되기","외부 관계는 변해도 나와 나의 관계는 끝까지 남아야 해.","힘든 순간 친구에게 하듯 나에게 한 문장 말하기.","내가 나의 안전한 사람이 된다."],
+["회색을 견디는 힘","사람은 좋은 행동과 나쁜 행동을 동시에 할 수 있어.","누군가를 좋다/싫다 대신 복합적인 한 문장으로 표현하기.","사람 판결은 복합적으로, 행동 평가는 선명하게."],
+["내 삶의 속도를 믿기","직업, 돈, 관계, 공부가 한 번에 해결되지 않아도 돼.","앞으로 3개월에 가장 중요한 영역 하나 고르기.","모든 걸 동시에 고치지 않아도 된다."],
+["과거의 나를 비난하지 않기","예전의 매달림과 확인은 그때의 생존전략이었을 수 있어. 이제 더 나은 방법을 알게 됐으니 바꾸면 돼.","과거의 나에게 ‘그때는 그게 최선이었구나’ 쓰기.","오래된 패턴은 정체성이 아니라 오래 연습된 반응이다."],
+["다시 흔들리는 날을 위한 약속","버튼은 다시 눌릴 수 있어. 그게 실패는 아니야.","주요 트리거 3개와 대응 문장 3개 적기.","트리거가 남아 있어도 선택은 새로 할 수 있다."],
+["99일째, 승재가 승재에게","이제 조언자의 자리에 승재도 앉아보자. 필요한 순간 스스로 현실검증과 돌봄을 줄 수 있어.","스스로에게 해주고 싶은 말을 5문장 쓰기.","이제는 내가 나에게 좋은 어른이 되어준다."],
+["100일째, 같이 가자","완벽해지는 게 종착지가 아니야. 흔들리고 실수해도 자기 손을 놓지 않는 사람이 되는 게 종착지야.","첫날의 문장을 다시 읽고 앞으로 가져갈 한 문장 고르기.","승재야, 무슨 일이 있어도 나는 너를 버리지 않을게. 같이 가자."]
+]
+];
+let day=Number(localStorage.getItem('sj100.day')||1); day=Math.min(100,Math.max(1,day));
+const $=s=>document.querySelector(s);
+function getDay(n){const p=Math.floor((n-1)/10),i=(n-1)%10,t=tips[p][i],ph=phases[p];return{title:t[0],lead:t[1],practice:t[2],anchor:t[3],message:ph.intro+"\n\n"+t[1]+" "+ph.core+"\n\n오늘의 목표는 마음을 억지로 바꾸는 게 아니라, 이 문장을 실제 작은 행동 하나로 옮겨보는 거야. 하루가 마음에 들지 않아도 괜찮아. 승재가 다시 자기 쪽으로 돌아오는 순간이 한 번이라도 있었다면 그 하루에는 이미 연습이 들어가 있어."}}
+function render(){const d=getDay(day);$('#badge').textContent='DAY '+day;$('#title').textContent=d.title;$('#lead').textContent=d.lead;$('#message').innerHTML=d.message.split('\n\n').map(x=>'<p>'+x+'</p>').join('');$('#anchor').textContent='“'+d.anchor+'”';$('#practice').textContent=d.practice;$('#bar').style.width=day+'%';$('#progress').textContent=day+' / 100';localStorage.setItem('sj100.day',day);const done=localStorage.getItem('sj100.done.'+day)==='1';$('#done').classList.toggle('done',done);$('#done').textContent=done?'오늘 읽음 완료 ✓':'오늘 읽음 ✓';const fav=localStorage.getItem('sj100.fav.'+day)==='1';$('#favorite').querySelector('span').textContent=fav?'♥':'♡';$('#memo').value=localStorage.getItem('sj100.memo.'+day)||'';window.scrollTo({top:0,behavior:'smooth'})}
+$('#prev').onclick=()=>{if(day>1){day--;render()}};$('#next').onclick=()=>{if(day<100){day++;render()}};
+$('#done').onclick=()=>{const k='sj100.done.'+day;localStorage.setItem(k,localStorage.getItem(k)==='1'?'0':'1');render()};
+$('#favorite').onclick=()=>{const k='sj100.fav.'+day;localStorage.setItem(k,localStorage.getItem(k)==='1'?'0':'1');render()};
+$('#saveNote').onclick=()=>{localStorage.setItem('sj100.memo.'+day,$('#memo').value.trim());$('#saveNote').textContent='저장됨 ✓';setTimeout(()=>$('#saveNote').textContent='저장하기',1000)};
+$('#ground').onclick=()=>$('#dlg').showModal();$('#close').onclick=()=>$('#dlg').close();
+render();
+</script>
+</body>
+</html>
